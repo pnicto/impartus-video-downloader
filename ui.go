@@ -12,9 +12,10 @@ func ChooseCourse(courses Courses) int {
 	}
 	fmt.Println()
 	fmt.Println("Enter a number")
+	// TODO: Check input is within range and a number
 	fmt.Scanf("%d", &choice)
 
-	// TODO: Check input is within range and a number
+	CreateDirInsideDownloads(courses[choice-1].SubjectName)
 
 	return choice - 1
 }
