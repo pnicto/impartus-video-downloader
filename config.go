@@ -26,7 +26,6 @@ func ParseConfig(configLocation string) *Config {
 	}
 
 	if config == (Config{}) {
-		fmt.Println("I am here")
 		err = json.Unmarshal(f, &config)
 		if err != nil {
 			fmt.Println("Could not parse the config please validate the json")
