@@ -6,6 +6,8 @@ import (
 	"os"
 )
 
+const CONFIG_LOCATION = "./config.json"
+
 type Config struct {
 	Username         string
 	Password         string
@@ -18,19 +20,27 @@ type Config struct {
 
 var config Config
 
-func ParseConfig(configLocation string) *Config {
+func parseConfig(configLocation string) *Config {
+	var config Config
+
 	f, err := os.ReadFile(configLocation)
 	if err != nil {
 		fmt.Println("Could not open config file")
 		panic(err)
 	}
 
+	err = json.Unmarshal(f, &config)
+	if err != nil {
+		fmt.Println("Could not parse the config please validate the json")
+		panic(err)
+	}
+
+	return &config
+}
+
+func GetConfig() *Config {
 	if config == (Config{}) {
-		err = json.Unmarshal(f, &config)
-		if err != nil {
-			fmt.Println("Could not parse the config please validate the json")
-			panic(err)
-		}
+		config = *parseConfig(CONFIG_LOCATION)
 	}
 
 	return &config

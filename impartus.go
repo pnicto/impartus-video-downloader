@@ -34,7 +34,8 @@ type (
 	}
 )
 
-func LoginAndSetToken(config *Config) {
+func LoginAndSetToken() {
+	config := GetConfig()
 	url := fmt.Sprintf("%s/auth/signin", config.BaseUrl)
 
 	requestBody, err := json.Marshal(map[string]string{"username": config.Username, "password": config.Password})
@@ -56,8 +57,9 @@ func LoginAndSetToken(config *Config) {
 	config.Token = loginResponse.Token
 }
 
-func GetCourses(config *Config) Courses {
+func GetCourses() Courses {
 	var courses Courses
+	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
 	resp := GetClientAuthorized(url, config.Token)
