@@ -21,3 +21,13 @@ func JoinChunks(path, title string) string {
 	return outfile
 }
 
+func JoinViews(leftFile, rightFile, title string) {
+	outfile := fmt.Sprintf("%s BOTH.mkv", leftFile[:len(leftFile)-9])
+
+	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-i", rightFile, "-i", leftFile, "-map", "0", "-map", "1", "-c", "copy", outfile)
+	if err := cmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(outfile)
+}
