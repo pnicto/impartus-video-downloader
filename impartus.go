@@ -253,8 +253,8 @@ func decryptChunk(filePath string, key []byte) {
 	}
 }
 
-func GetMedata(lectures Lectures) []string {
-	var m3u8Filepaths []string
+func GetMedata(lectures Lectures) map[string]string {
+	m3u8Filepaths := make(map[string]string)
 
 	chunksCount := 0
 	config := GetConfig()
@@ -279,7 +279,7 @@ func GetMedata(lectures Lectures) []string {
 
 		m3u8File, m3u8Filepath := createTempM3U8File(lecture.Ttid)
 		defer m3u8File.Close()
-		m3u8Filepaths = append(m3u8Filepaths, m3u8Filepath)
+		m3u8Filepaths[m3u8Filepath] = fmt.Sprintf("LEC %03d %s", lecture.SeqNo, lecture.Topic)
 
 		// TODO: Handle for different views
 		for scanner.Scan() {
