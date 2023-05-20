@@ -284,14 +284,21 @@ func downloadChunkConditonally(ttid int, resolution string, chunk int, decryptio
 	case "left":
 		chunkPath := downloadChunk(ttid, resolution, "v3", chunk)
 		decryptChunk(chunkPath, decryptionKey)
+
+		RemoveFile(chunkPath)
 	case "right":
 		chunkPath := downloadChunk(ttid, resolution, "v1", chunk)
 		decryptChunk(chunkPath, decryptionKey)
+
+		RemoveFile(chunkPath)
 	case "both":
 		chunkPathLeft := downloadChunk(ttid, resolution, "v3", chunk)
 		chunkPathRight := downloadChunk(ttid, resolution, "v1", chunk)
 		decryptChunk(chunkPathLeft, decryptionKey)
 		decryptChunk(chunkPathRight, decryptionKey)
+
+		RemoveFile(chunkPathLeft)
+		RemoveFile(chunkPathRight)
 	}
 }
 
@@ -306,6 +313,11 @@ func joinChunksConditionally(leftFilePath, rightFilePath, titleLeft, titleRight 
 	case "both":
 		JoinChunks(leftFilePath, titleLeft)
 		JoinChunks(rightFilePath, titleRight)
+		leftOutFile := JoinChunks(leftFilePath, titleLeft)
+		rightOutFile := JoinChunks(rightFilePath, titleRight)
+
+		RemoveFile(leftOutFile)
+		RemoveFile(rightOutFile)
 	}
 }
 
