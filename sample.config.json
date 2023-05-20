@@ -1,0 +1,9 @@
+{
+  "username": "fxxxxxx@hyderabad.bits-pilani.ac.in",
+  "password": "",
+  "baseUrl": "http://bitshyd.impartus.com/api",
+  "quality": "720",
+  "views": "both",
+  "downloadLocation": "./downloads",
+  "tempDirLocation": "./.temp"
+}
