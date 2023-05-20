@@ -12,6 +12,7 @@ func CreateDirInsideDownloads(dirName string) string {
 	err := os.MkdirAll(config.DownloadLocation, 0755)
 	if err != nil {
 		fmt.Printf("Could not create downloads directory %s with err %v\n", config.DownloadLocation, err)
+		panic(err)
 	}
 
 	// Remove slashes from course name
@@ -22,6 +23,7 @@ func CreateDirInsideDownloads(dirName string) string {
 	err = os.MkdirAll(dirPath, 0755)
 	if err != nil {
 		fmt.Printf("Could not create directory %s with err %v\n", dirPath, err)
+		panic(err)
 	}
 
 	config.DownloadLocation = dirPath
