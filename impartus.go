@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -161,9 +160,8 @@ func getResolution(quality string) string {
 	return resolution
 }
 
-func createTempM3U8File(ttid int) (*os.File, string) {
+func createTempM3U8File(ttid int, view string) (*os.File, string) {
 	config := GetConfig()
-	fmt.Println(config)
 
 	err := os.MkdirAll(config.TempDirLocation, 0755)
 	if err != nil {
@@ -171,7 +169,7 @@ func createTempM3U8File(ttid int) (*os.File, string) {
 		panic(err)
 	}
 
-	tempM3U8File := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d.m3u8", ttid))
+	tempM3U8File := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%s.m3u8", ttid, view))
 
 	f, err := os.Create(tempM3U8File)
 	if err != nil {
@@ -205,7 +203,7 @@ func downloadChunk(ttid int, resolution string, view string, chunk int) string {
 	resp := GetClientAuthorized(chunkUrl, config.Token)
 	defer resp.Body.Close()
 
-	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%04d_%s.ts.temp", chunk, view))
+	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%04d_%s.ts.temp", ttid, chunk, view))
 	outFile, err := os.Create(outFilepath)
 	if err != nil {
 		fmt.Printf("Could not download chunk %d %d %v", ttid, chunk, err)
@@ -247,23 +245,78 @@ func decryptChunk(filePath string, key []byte) {
 	plainText := make([]byte, len(infile))
 	mode.CryptBlocks(plainText, infile)
 
-	err = ioutil.WriteFile(outPath, plainText, os.ModePerm)
+	err = os.WriteFile(outPath, plainText, os.ModePerm)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func GetMedata(lectures Lectures) map[string]string {
-	m3u8Filepaths := make(map[string]string)
-
-	chunksCount := 0
+func writeM3U8FileConditionally(leftFile, rightFile *os.File, leftContent, rightContent string) {
 	config := GetConfig()
 
-	for _, lecture := range lectures {
-		keyUrl := fmt.Sprintf("%s/fetchvideo/getVideoKey?ttid=%d&keyid=0", config.BaseUrl, lecture.Ttid)
-		view := config.Views
-		resolution := getResolution(config.Quality)
+	switch config.Views {
+	case "left":
+		_, err := leftFile.WriteString(leftContent)
+		if err != nil {
+			log.Fatalf("Could not write to left m3u8 file")
+		}
+	case "right":
+		_, err := rightFile.WriteString(rightContent)
+		if err != nil {
+			log.Fatalf("Could not write to left m3u8 file")
+		}
+	case "both":
+		_, err := leftFile.WriteString(leftContent)
+		if err != nil {
+			log.Fatalf("Could not write to left m3u8 file")
+		}
+		_, err = rightFile.WriteString(rightContent)
+		if err != nil {
+			log.Fatalf("Could not write to left m3u8 file")
+		}
+	}
+}
 
+func downloadChunkConditonally(ttid int, resolution string, chunk int, decryptionKey []byte) {
+	config := GetConfig()
+
+	switch config.Views {
+	case "left":
+		chunkPath := downloadChunk(ttid, resolution, "v3", chunk)
+		decryptChunk(chunkPath, decryptionKey)
+	case "right":
+		chunkPath := downloadChunk(ttid, resolution, "v1", chunk)
+		decryptChunk(chunkPath, decryptionKey)
+	case "both":
+		chunkPathLeft := downloadChunk(ttid, resolution, "v3", chunk)
+		chunkPathRight := downloadChunk(ttid, resolution, "v1", chunk)
+		decryptChunk(chunkPathLeft, decryptionKey)
+		decryptChunk(chunkPathRight, decryptionKey)
+	}
+}
+
+func joinChunksConditionally(leftFilePath, rightFilePath, titleLeft, titleRight string) {
+	config := GetConfig()
+
+	switch config.Views {
+	case "left":
+		JoinChunks(leftFilePath, titleLeft)
+	case "right":
+		JoinChunks(rightFilePath, titleRight)
+	case "both":
+		JoinChunks(leftFilePath, titleLeft)
+		JoinChunks(rightFilePath, titleRight)
+	}
+}
+
+func GetMetadata(lectures Lectures) {
+	config := GetConfig()
+	resolution := getResolution(config.Quality)
+
+	for _, lecture := range lectures {
+		chunksCount := 0
+
+		keyUrl := fmt.Sprintf("%s/fetchvideo/getVideoKey?ttid=%d&keyid=0", config.BaseUrl, lecture.Ttid)
 		resp := GetClientAuthorized(keyUrl, config.Token)
 		defer resp.Body.Close()
 
@@ -274,44 +327,39 @@ func GetMedata(lectures Lectures) map[string]string {
 		}
 
 		decryptionKey := getDecryptionKey(keyUrlContent)
+
 		m3u8Data := getM3U8(lecture.Ttid)
 		scanner := bufio.NewScanner(strings.NewReader(m3u8Data))
 
-		m3u8File, m3u8Filepath := createTempM3U8File(lecture.Ttid)
-		defer m3u8File.Close()
-		m3u8Filepaths[m3u8Filepath] = fmt.Sprintf("LEC %03d %s", lecture.SeqNo, lecture.Topic)
+		m3u8FileRight, m3u8FilepathRight := createTempM3U8File(lecture.Ttid, "v1")
+		defer m3u8FileRight.Close()
 
-		// TODO: Handle for different views
+		m3u8FileLeft, m3u8FilepathLeft := createTempM3U8File(lecture.Ttid, "v3")
+		defer m3u8FileLeft.Close()
+
 		for scanner.Scan() {
 			line := scanner.Text()
 			if strings.HasPrefix(line, "#EXT-X-DISCONTINUITY") {
-				m3u8File.WriteString("#EXT-X-ENDLIST\n")
+				writeM3U8FileConditionally(m3u8FileLeft, m3u8FileRight, "#EXT-X-ENDLIST\n", "#EXT-X-ENDLIST\n")
 				break
 			} else if strings.HasPrefix(line, "#EXT-X-KEY") {
-				m3u8File.WriteString("#EXT-X-KEY:METHOD=NONE")
+				writeM3U8FileConditionally(m3u8FileLeft, m3u8FileRight, "#EXT-X-KEY:METHOD=NONE\n", "#EXT-X-KEY:METHOD=NONE\n")
 				continue
 			} else if strings.HasPrefix(line, "#") || line == "" {
-				m3u8File.WriteString(line + "\n")
+				writeM3U8FileConditionally(m3u8FileLeft, m3u8FileRight, line+"\n", line+"\n")
 				continue
 			} else {
-				m3u8File.WriteString(fmt.Sprintf("%04d_v1.ts\n", chunksCount))
+				writeM3U8FileConditionally(m3u8FileLeft, m3u8FileRight, fmt.Sprintf("%d_%04d_%s.ts\n", lecture.Ttid, chunksCount, "v3"), fmt.Sprintf("%d_%04d_%s.ts\n", lecture.Ttid, chunksCount, "v1"))
 				chunksCount++
 			}
 		}
 
 		for i := 0; i < chunksCount; i++ {
-			switch view {
-			case "both":
-				// TODO: Need to think of a way to handle this
-				// downloadChunk(lecture.Ttid, resolution, "v1", i)
-				// downloadChunk(lecture.Ttid, resolution, "v3", i)
-			case "right":
-				chunkPath := downloadChunk(lecture.Ttid, resolution, "v1", i)
-				decryptChunk(chunkPath, decryptionKey)
-			case "left":
-				downloadChunk(lecture.Ttid, resolution, "v3", i)
-			}
+			downloadChunkConditonally(lecture.Ttid, resolution, i, decryptionKey)
 		}
+
+		leftTitle := fmt.Sprintf("LEC %03d %s LEFT", lecture.SeqNo, lecture.Topic)
+		rightTitle := fmt.Sprintf("LEC %03d %s RIGHT", lecture.SeqNo, lecture.Topic)
+		joinChunksConditionally(m3u8FilepathLeft, m3u8FilepathRight, leftTitle, rightTitle)
 	}
-	return m3u8Filepaths
 }
