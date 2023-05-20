@@ -16,6 +16,7 @@ type Config struct {
 	Views            string
 	DownloadLocation string
 	Token            string
+	TempDirLocation  string
 }
 
 var config Config
