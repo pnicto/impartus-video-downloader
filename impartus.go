@@ -311,10 +311,11 @@ func joinChunksConditionally(leftFilePath, rightFilePath, titleLeft, titleRight 
 	case "right":
 		JoinChunks(rightFilePath, titleRight)
 	case "both":
-		JoinChunks(leftFilePath, titleLeft)
-		JoinChunks(rightFilePath, titleRight)
 		leftOutFile := JoinChunks(leftFilePath, titleLeft)
 		rightOutFile := JoinChunks(rightFilePath, titleRight)
+
+		title := titleLeft[:len(titleLeft)-9]
+		JoinViews(leftOutFile, rightOutFile, title)
 
 		RemoveFile(leftOutFile)
 		RemoveFile(rightOutFile)
