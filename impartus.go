@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 type (
@@ -282,23 +283,49 @@ func downloadChunkConditonally(ttid int, resolution string, chunk int, decryptio
 
 	switch config.Views {
 	case "left":
-		chunkPath := downloadChunk(ttid, resolution, "v3", chunk)
-		decryptChunk(chunkPath, decryptionKey)
+		var wg sync.WaitGroup
 
-		RemoveFile(chunkPath)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			chunkPath := downloadChunk(ttid, resolution, "v3", chunk)
+			decryptChunk(chunkPath, decryptionKey)
+			RemoveFile(chunkPath)
+		}()
+		wg.Wait()
+
 	case "right":
-		chunkPath := downloadChunk(ttid, resolution, "v1", chunk)
-		decryptChunk(chunkPath, decryptionKey)
+		var wg sync.WaitGroup
 
-		RemoveFile(chunkPath)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			chunkPath := downloadChunk(ttid, resolution, "v1", chunk)
+			decryptChunk(chunkPath, decryptionKey)
+			RemoveFile(chunkPath)
+		}()
+		wg.Wait()
+
 	case "both":
-		chunkPathLeft := downloadChunk(ttid, resolution, "v3", chunk)
-		chunkPathRight := downloadChunk(ttid, resolution, "v1", chunk)
-		decryptChunk(chunkPathLeft, decryptionKey)
-		decryptChunk(chunkPathRight, decryptionKey)
+		var wg sync.WaitGroup
 
-		RemoveFile(chunkPathLeft)
-		RemoveFile(chunkPathRight)
+		wg.Add(2)
+
+		go func() {
+			defer wg.Done()
+			chunkPathLeft := downloadChunk(ttid, resolution, "v3", chunk)
+			decryptChunk(chunkPathLeft, decryptionKey)
+			RemoveFile(chunkPathLeft)
+		}()
+
+		go func() {
+			defer wg.Done()
+			chunkPathRight := downloadChunk(ttid, resolution, "v1", chunk)
+			decryptChunk(chunkPathRight, decryptionKey)
+			RemoveFile(chunkPathRight)
+		}()
+
+		wg.Wait()
 	}
 }
 
@@ -307,18 +334,53 @@ func joinChunksConditionally(leftFilePath, rightFilePath, titleLeft, titleRight 
 
 	switch config.Views {
 	case "left":
-		JoinChunks(leftFilePath, titleLeft)
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			JoinChunks(leftFilePath, titleLeft)
+		}()
+		wg.Wait()
+
 	case "right":
-		JoinChunks(rightFilePath, titleRight)
+		var wg sync.WaitGroup
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			JoinChunks(rightFilePath, titleRight)
+		}()
+		wg.Wait()
+
 	case "both":
-		leftOutFile := JoinChunks(leftFilePath, titleLeft)
-		rightOutFile := JoinChunks(rightFilePath, titleRight)
+		var wg sync.WaitGroup
+		leftChan := make(chan string)
+		rightChan := make(chan string)
+
+		go func() {
+			leftChan <- JoinChunks(leftFilePath, titleLeft)
+		}()
+		go func() {
+			rightChan <- JoinChunks(rightFilePath, titleRight)
+		}()
+
+		leftOutFile := <-leftChan
+		rightOutFile := <-rightChan
 
 		title := titleLeft[:len(titleLeft)-9]
-		JoinViews(leftOutFile, rightOutFile, title)
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			JoinViews(leftOutFile, rightOutFile, title)
+		}()
+		wg.Wait()
 
 		RemoveFile(leftOutFile)
 		RemoveFile(rightOutFile)
+
+		wg.Wait()
 	}
 }
 
@@ -326,7 +388,11 @@ func GetMetadata(lectures Lectures) {
 	config := GetConfig()
 	resolution := getResolution(config.Quality)
 
+	var wg sync.WaitGroup
+
 	for _, lecture := range lectures {
+		wg.Add(1)
+
 		chunksCount := 0
 
 		keyUrl := fmt.Sprintf("%s/fetchvideo/getVideoKey?ttid=%d&keyid=0", config.BaseUrl, lecture.Ttid)
@@ -367,12 +433,27 @@ func GetMetadata(lectures Lectures) {
 			}
 		}
 
+		var chunkWg sync.WaitGroup
+
 		for i := 0; i < chunksCount; i++ {
-			downloadChunkConditonally(lecture.Ttid, resolution, i, decryptionKey)
+			chunkWg.Add(1)
+
+			go func(i int) {
+				defer chunkWg.Done()
+				downloadChunkConditonally(lecture.Ttid, resolution, i, decryptionKey)
+			}(i)
 		}
+
+		chunkWg.Wait()
+		fmt.Println("Entering ffmpeg")
 
 		leftTitle := fmt.Sprintf("LEC %03d %s LEFT", lecture.SeqNo, lecture.Topic)
 		rightTitle := fmt.Sprintf("LEC %03d %s RIGHT", lecture.SeqNo, lecture.Topic)
-		joinChunksConditionally(m3u8FilepathLeft, m3u8FilepathRight, leftTitle, rightTitle)
+
+		go func() {
+			defer wg.Done()
+			joinChunksConditionally(m3u8FilepathLeft, m3u8FilepathRight, leftTitle, rightTitle)
+		}()
 	}
+	wg.Wait()
 }
