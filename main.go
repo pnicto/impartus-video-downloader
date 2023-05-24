@@ -2,14 +2,24 @@ package main
 
 import (
 	"log"
+	"os"
 	"os/exec"
 )
 
 func main() {
 	_, err := exec.LookPath("ffmpeg")
 	if err != nil {
-		log.Fatalf("Please add ffmpeg to your path")
+		log.Fatalln("Please add ffmpeg to your path")
 	}
+
+	// Logging
+	logFile, err := os.OpenFile("run.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		log.Println("Could not start logs")
+	}
+	defer logFile.Close()
+
+	log.SetOutput(logFile)
 
 	LoginAndSetToken()
 	courses := GetCourses()

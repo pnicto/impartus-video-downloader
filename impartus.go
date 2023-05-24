@@ -83,6 +83,8 @@ type (
 )
 
 func LoginAndSetToken() {
+	log.Println("Attempt to login")
+
 	config := GetConfig()
 	url := fmt.Sprintf("%s/auth/signin", config.BaseUrl)
 
@@ -96,6 +98,21 @@ func LoginAndSetToken() {
 		log.Fatalf("Login failed with error %v", err)
 	}
 
+	if response.StatusCode == http.StatusUnauthorized {
+		fmt.Println("Wrong credentials please retry")
+		log.Fatalln("Wrong credentials please retry")
+	}
+
+	if response.StatusCode != http.StatusOK {
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			log.Fatalln("Error in reading the response body when login failed")
+		}
+
+		log.Println(url, string(body))
+		log.Fatalln("Something went wrong please create a new issue on github")
+	}
+
 	var loginResponse LoginResponse
 	err = json.NewDecoder(response.Body).Decode(&loginResponse)
 	if err != nil {
@@ -103,9 +120,12 @@ func LoginAndSetToken() {
 	}
 
 	config.Token = loginResponse.Token
+	log.Printf("Token set with length %d\n", len(config.Token))
 }
 
 func GetCourses() Courses {
+	log.Println("Getting courses")
+
 	var courses Courses
 	config := GetConfig()
 
@@ -118,10 +138,15 @@ func GetCourses() Courses {
 		log.Fatalf("Could not decode response %v", err)
 	}
 
+	log.Printf("Fetched %d courses\n", len(courses))
+	log.Println(courses)
+
 	return courses
 }
 
 func GetLectures(course Course) Lectures {
+	log.Println("Getting lectures")
+
 	var lectures Lectures
 	config := GetConfig()
 
@@ -133,6 +158,9 @@ func GetLectures(course Course) Lectures {
 	if err != nil {
 		log.Fatalf("Could not decode response %v", err)
 	}
+
+	log.Printf("Fetched %d lectures\n", len(lectures))
+	log.Println(lectures)
 
 	return lectures
 }
