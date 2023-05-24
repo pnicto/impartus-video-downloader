@@ -1,8 +1,9 @@
 archives:
   - format: zip
     files:
-      - src: "sample.config.json"
-        dst: "config.json"
+      - sample.config.json
+      - README.md
+      - LICENSE
 release:
   mode: replace
   header: |
@@ -13,7 +14,7 @@ changelog:
       regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
       order: 0
     - title: "Bug fixes"
-      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
       order: 1
     - title: Others
       order: 999
