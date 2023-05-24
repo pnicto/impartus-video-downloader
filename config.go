@@ -17,6 +17,7 @@ type Config struct {
 	DownloadLocation string
 	Token            string
 	TempDirLocation  string
+	Threads          int
 }
 
 var config Config
@@ -34,6 +35,10 @@ func parseConfig(configLocation string) *Config {
 	if err != nil {
 		fmt.Println("Could not parse the config please validate the json")
 		panic(err)
+	}
+
+	if config.Threads < 1 {
+		config.Threads = 10
 	}
 
 	return &config

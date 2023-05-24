@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 	"path/filepath"
 )
@@ -13,20 +12,23 @@ func JoinChunks(path, title string) string {
 	outfile := filepath.Join(config.DownloadLocation, title)
 	outfile = fmt.Sprintf("%s.mkv", outfile)
 
-	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-allowed_extensions", "ts,m3u8", "-i", path, "-c", "copy", outfile)
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-allowed_extensions", "ts,m3u8", "-threads", fmt.Sprint(config.Threads), "-i", path, "-c", "copy", outfile)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
 
 	return outfile
 }
 
 func JoinViews(leftFile, rightFile, title string) {
+	config := GetConfig()
 	outfile := fmt.Sprintf("%s BOTH.mkv", leftFile[:len(leftFile)-9])
 
-	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-i", rightFile, "-i", leftFile, "-map", "0", "-map", "1", "-c", "copy", outfile)
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
+	cmd := exec.Command("ffmpeg", "-y", "-threads", fmt.Sprint(config.Threads), "-hide_banner", "-i", rightFile, "-i", leftFile, "-map", "0", "-map", "1", "-c", "copy", outfile)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
 
 	fmt.Println(outfile)
