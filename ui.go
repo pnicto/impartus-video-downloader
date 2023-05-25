@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 )
 
 func ChooseCourse(courses Courses) int {
@@ -27,7 +28,7 @@ func ChooseCourse(courses Courses) int {
 	return choice - 1
 }
 
-func ChooseLectures(lectures Lectures) (int, int) {
+func ChooseLectures(lectures Lectures) (int, int, bool) {
 	log.Println("User entered choose lecture")
 
 	var startIndex int
@@ -48,5 +49,22 @@ func ChooseLectures(lectures Lectures) (int, int) {
 	log.Printf("User chose %d %d\n", startIndex, endIndex)
 	log.Printf("Indices are %d %d\n", startIndex-1, endIndex-1)
 
-	return startIndex - 1, endIndex - 1
+	var skipEmptyLectures string
+
+	fmt.Println("Skip lectures with titles like 'No class' or 'No lecture'? [Y/n]")
+	fmt.Scanf("%s\n", &skipEmptyLectures)
+	skipEmptyLectures = strings.ToLower(skipEmptyLectures)
+
+	for skipEmptyLectures != "y" && skipEmptyLectures != "n" && skipEmptyLectures != "" {
+		fmt.Println("Please enter a valid choice: [Y/n]")
+		fmt.Scanf("%s\n", &skipEmptyLectures)
+	}
+
+	if skipEmptyLectures == "n" {
+		log.Printf("User chose not to skip empty lectures\n")
+	} else {
+		log.Printf("User chose to skip empty lectures\n")
+	}
+
+	return startIndex - 1, endIndex - 1, (skipEmptyLectures != "n")
 }
