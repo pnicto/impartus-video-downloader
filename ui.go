@@ -34,7 +34,7 @@ func ChooseLectures(lectures Lectures) (int, int, bool) {
 	var startIndex int
 	var endIndex int
 
-	fmt.Println("Choose a course to download from")
+	fmt.Println("Choose the lecture range you want to download")
 	fmt.Println()
 	for i, lecture := range lectures {
 		fmt.Printf("%3d LEC %d  %s\n", i+1, lecture.SeqNo, lecture.Topic)
