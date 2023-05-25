@@ -234,6 +234,7 @@ func downloadChunk(ttid int, resolution string, view string, chunk int) string {
 
 	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%04d_%s.ts.temp", ttid, chunk, view))
 	outFile, err := os.Create(outFilepath)
+	defer outFile.Close()
 	if err != nil {
 		fmt.Printf("Could not download chunk %d %d %v", ttid, chunk, err)
 	}
