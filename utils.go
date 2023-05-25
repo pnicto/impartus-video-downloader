@@ -35,7 +35,7 @@ func CreateDirInsideDownloads(dirName string) string {
 
 func RemoveFile(path string) {
 	if err := os.Remove(path); err != nil {
-		fmt.Printf("Could not remove %s because %v", path, err)
+		fmt.Printf("Could not remove %s because %v\n", path, err)
 	}
 }
 
