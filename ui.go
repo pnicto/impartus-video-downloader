@@ -60,6 +60,10 @@ func ChooseLectures(lectures Lectures) (int, int, bool) {
 		fmt.Scanf("%s\n", &skipEmptyLectures)
 	}
 
+	if skipEmptyLectures == "" {
+		fmt.Println("Skipping empty lectures by default")
+	}
+
 	if skipEmptyLectures == "n" {
 		log.Printf("User chose not to skip empty lectures\n")
 	} else {
