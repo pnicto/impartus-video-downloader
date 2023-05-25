@@ -27,6 +27,12 @@ func main() {
 	courseIndex := ChooseCourse(courses)
 	lectures := GetLectures(courses[courseIndex])
 
-	startLectureIndex, endLectureIndex := ChooseLectures(lectures)
-	GetMetadata(lectures[startLectureIndex : endLectureIndex+1])
+	startLectureIndex, endLectureIndex, skipEmptyLectures := ChooseLectures(lectures)
+	var chosenLectures Lectures
+	if skipEmptyLectures {
+		chosenLectures = removeEmptyLectures(lectures[startLectureIndex : endLectureIndex+1])
+	} else {
+		chosenLectures = lectures[startLectureIndex : endLectureIndex+1]
+	}
+	GetMetadata(chosenLectures)
 }
