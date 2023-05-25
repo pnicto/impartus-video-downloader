@@ -38,3 +38,15 @@ func RemoveFile(path string) {
 		fmt.Printf("Could not remove %s because %v", path, err)
 	}
 }
+
+// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
+func removeEmptyLectures(lectures Lectures) Lectures {
+	filteredLectures := lectures[:0]
+	for _, lecture := range lectures {
+		lowercaseTitle := strings.ToLower(lecture.Topic)
+		if !(lowercaseTitle == "no class" || lowercaseTitle == "no lecture") {
+			filteredLectures = append(filteredLectures, lecture)
+		}
+	}
+	return filteredLectures
+}
