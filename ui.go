@@ -18,7 +18,7 @@ func ChooseCourse(courses Courses) int {
 	fmt.Println()
 	fmt.Println("Enter a number")
 	// TODO: Check input is within range and a number
-	fmt.Scanf("%d", &choice)
+	fmt.Scanf("%d\n", &choice)
 	log.Printf("User chose %d\n", choice)
 	log.Printf("Index is %d\n", choice-1)
 
@@ -43,7 +43,7 @@ func ChooseLectures(lectures Lectures) (int, int) {
 	// TODO: Add better range examples here
 	fmt.Println("Enter a range")
 	// TODO: Check input is within range and a number
-	fmt.Scanf("%d %d", &startIndex, &endIndex)
+	fmt.Scanf("%d %d\n", &startIndex, &endIndex)
 
 	log.Printf("User chose %d %d\n", startIndex, endIndex)
 	log.Printf("Indices are %d %d\n", startIndex-1, endIndex-1)
