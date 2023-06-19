@@ -1,9 +1,11 @@
+Note: Work in progress. (Currently on halt due to PS1)
+
 # impartus video downloader
 
-- [impartus video downloader](#impartus-video-downloader)
-  - [How to use](#how-to-use)
-    - [Selecting lectures](#selecting-lectures)
-  - [Configuration](#configuration)
+*   [impartus video downloader](#impartus-video-downloader)
+    *   [How to use](#how-to-use)
+        *   [Selecting lectures](#selecting-lectures)
+    *   [Configuration](#configuration)
 
 ## How to use
 
