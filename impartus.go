@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 )
@@ -79,6 +80,11 @@ type (
 		LessonPlanAvailable int    `json:"lessonPlanAvailable"`
 		Trending            int    `json:"trending"`
 		LastPosition        int    `json:"lastPosition"`
+	}
+
+	StreamInfo struct {
+		Quality string
+		URL     string
 	}
 )
 
@@ -407,6 +413,46 @@ func joinChunksConditionally(leftFilePath, rightFilePath, titleLeft, titleRight 
 
 		wg.Wait()
 	}
+}
+
+func getStreamInfos(lecture Lecture) []StreamInfo {
+	config := GetConfig()
+	var streamInfos []StreamInfo
+	uri := fmt.Sprintf("%s/fetchvideo?ttid=%d&token=%s&type=index.m3u8", config.BaseUrl, lecture.Ttid, config.Token)
+
+	resp := GetClientAuthorized(uri, config.Token)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Println("Error closing response body")
+		}
+	}(resp.Body)
+
+	res, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading in response body")
+	}
+
+	lines := strings.Split(string(res), "\n")
+
+	pattern := `\d*x\d*`
+	re := regexp.MustCompile(pattern)
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "http") || strings.HasPrefix(line, "https") {
+			match := re.FindStringSubmatch(line)
+			if len(match) > 0 {
+				streamInfos = append(streamInfos, StreamInfo{Quality: match[0], URL: line})
+			}
+		}
+	}
+
+	return streamInfos
+}
+
+func GetPlaylist(lecture Lecture) {
+	streamInfos := getStreamInfos(lecture)
+	fmt.Println(streamInfos)
 }
 
 func GetMetadata(lectures Lectures) {
