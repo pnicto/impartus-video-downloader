@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const CONFIG_LOCATION = "./config.json"
+const ConfigLocation = "./config.json"
 
 type Config struct {
 	Username         string
@@ -46,7 +46,7 @@ func parseConfig(configLocation string) *Config {
 
 func GetConfig() *Config {
 	if config == (Config{}) {
-		config = *parseConfig(CONFIG_LOCATION)
+		config = *parseConfig(ConfigLocation)
 	}
 
 	return &config
