@@ -136,7 +136,7 @@ func GetCourses() Courses {
 	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
-	resp := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&courses)
@@ -157,7 +157,7 @@ func GetLectures(course Course) Lectures {
 	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects/%d/lectures/%d", config.BaseUrl, course.SubjectID, course.SessionID)
-	resp := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&lectures)
@@ -219,7 +219,7 @@ func getM3U8(ttid int) string {
 	resolution := getResolution(config.Quality)
 	url := fmt.Sprintf("%s/fetchvideo?tag=LC&inm3u8=http%%3A%%2F%%2F172.16.3.45%%2F%%2Fdownload1%%2F%d_hls%%2F%s_27%%2F%s_27.m3u8", config.BaseUrl, ttid, resolution, resolution)
 
-	resp := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	m3u8Data, err := io.ReadAll(resp.Body)
@@ -235,7 +235,7 @@ func downloadChunk(ttid int, resolution string, view string, chunk int) string {
 	config := GetConfig()
 	chunkUrl := fmt.Sprintf("%s/fetchvideo?ts=http%%3A%%2F%%2F172.16.3.45%%2F%%2Fdownload1%%2F%d_hls%%2F%s_27%%2F%s_27%s_%04d_hls_0.ts", config.BaseUrl, ttid, resolution, resolution, view, chunk)
 
-	resp := GetClientAuthorized(chunkUrl, config.Token)
+	resp, _ := GetClientAuthorized(chunkUrl, config.Token)
 	defer resp.Body.Close()
 
 	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%04d_%s.ts.temp", ttid, chunk, view))
@@ -420,7 +420,7 @@ func getStreamInfos(lecture Lecture) []StreamInfo {
 	var streamInfos []StreamInfo
 	uri := fmt.Sprintf("%s/fetchvideo?ttid=%d&token=%s&type=index.m3u8", config.BaseUrl, lecture.Ttid, config.Token)
 
-	resp := GetClientAuthorized(uri, config.Token)
+	resp, _ := GetClientAuthorized(uri, config.Token)
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -468,7 +468,7 @@ func GetMetadata(lectures Lectures) {
 		chunksCount := 0
 
 		keyUrl := fmt.Sprintf("%s/fetchvideo/getVideoKey?ttid=%d&keyid=0", config.BaseUrl, lecture.Ttid)
-		resp := GetClientAuthorized(keyUrl, config.Token)
+		resp, _ := GetClientAuthorized(keyUrl, config.Token)
 		defer resp.Body.Close()
 
 		keyUrlContent, err := io.ReadAll(resp.Body)
