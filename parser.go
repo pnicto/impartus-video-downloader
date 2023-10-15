@@ -12,13 +12,18 @@ type ParsedPlaylist struct {
 	KeyURL           string
 	FirstViewURLs    []string
 	SecondViewURLs   []string
+	Id               int
+	Title            string
 }
 
-func PlaylistParser(scanner *bufio.Scanner) ParsedPlaylist {
+func PlaylistParser(scanner *bufio.Scanner, id int, title string) ParsedPlaylist {
 	var parsedOutput ParsedPlaylist
 	var isFirstView = true
 	var firstViewUrls []string
 	var secondViewUrls []string
+
+	parsedOutput.Id = id
+	parsedOutput.Title = title
 
 	for scanner.Scan() {
 		l := scanner.Text()
@@ -46,7 +51,6 @@ func PlaylistParser(scanner *bufio.Scanner) ParsedPlaylist {
 	if isFirstView {
 		parsedOutput.HasMultipleViews = false
 		parsedOutput.FirstViewURLs = firstViewUrls
-		parsedOutput.SecondViewURLs = nil
 	} else {
 		parsedOutput.HasMultipleViews = true
 		parsedOutput.FirstViewURLs = firstViewUrls
