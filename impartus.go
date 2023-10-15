@@ -255,7 +255,7 @@ func downloadChunk(ttid int, resolution string, view string, chunk int) string {
 }
 
 // TODO: Refine decryptChunk
-func decryptChunk(filePath string, key []byte) {
+func decryptChunk(filePath string, key []byte) string {
 	outPath := filePath[:len(filePath)-5]
 
 	infile, err := os.ReadFile(filePath)
@@ -281,6 +281,7 @@ func decryptChunk(filePath string, key []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return outPath
 }
 
 func writeM3U8FileConditionally(leftFile, rightFile *os.File, leftContent, rightContent string) {
