@@ -455,6 +455,32 @@ func getStreamInfos(lecture Lecture) []StreamInfo {
 func GetPlaylist(lecture Lecture) {
 	streamInfos := getStreamInfos(lecture)
 	fmt.Println(streamInfos)
+func getStreamUrl(streamInfos []StreamInfo) string {
+	config := GetConfig()
+	var streamUrl string
+	for _, streamInfo := range streamInfos {
+		if streamInfo.Quality == config.Quality {
+			streamUrl = streamInfo.URL
+			break
+		}
+	}
+	return streamUrl
+}
+
+func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
+	var parsedPlaylists []ParsedPlaylist
+	for _, lecture := range lectures {
+		streamInfos := getStreamInfos(lecture)
+		streamUrl := getStreamUrl(streamInfos)
+		resp, _ := GetClientAuthorized(streamUrl, GetConfig().Token)
+		defer resp.Body.Close()
+		scanner := bufio.NewScanner(resp.Body)
+		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic))
+	}
+
+	return parsedPlaylists
+}
+
 }
 
 func GetMetadata(lectures Lectures) {
