@@ -452,9 +452,6 @@ func getStreamInfos(lecture Lecture) []StreamInfo {
 	return streamInfos
 }
 
-func GetPlaylist(lecture Lecture) {
-	streamInfos := getStreamInfos(lecture)
-	fmt.Println(streamInfos)
 func getStreamUrl(streamInfos []StreamInfo) string {
 	config := GetConfig()
 	var streamUrl string
@@ -481,6 +478,91 @@ func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
 	return parsedPlaylists
 }
 
+func downloadUrl(url string, id int, chunk int, view string) (string, error) {
+	resp, err := GetClientAuthorized(url, config.Token)
+	if err != nil {
+		return "", err
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("Could not close response body %v", err)
+		}
+	}(resp.Body)
+
+	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%s_%04d.ts.temp", id, view, chunk))
+	outFile, err := os.Create(outFilepath)
+	defer outFile.Close()
+	if err != nil {
+		fmt.Printf("Could not download chunk %d %v", chunk, err)
+	}
+
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		fmt.Printf("Could not write chunk %d %v", chunk, err)
+	}
+	outFile.Sync()
+
+	return outFilepath, nil
+}
+
+type DownloadedPlaylist struct {
+	FirstViewChunks  []string
+	SecondViewChunks []string
+	Playlist         ParsedPlaylist
+}
+
+func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
+	config := GetConfig()
+	var downloaded []DownloadedPlaylist
+
+	err := os.MkdirAll(config.TempDirLocation, 0755)
+	if err != nil {
+		log.Fatalln("Could not create temp dir")
+	}
+
+	for _, playlist := range playlists {
+		var downloadedPlaylist DownloadedPlaylist
+
+		resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)
+		defer resp.Body.Close()
+		keyUrlContent, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Printf("Could not get keyUrlContent %v", err)
+			panic(err)
+		}
+
+		decryptionKey := getDecryptionKey(keyUrlContent)
+
+		if len(playlist.FirstViewURLs) > 0 {
+			for i, url := range playlist.FirstViewURLs {
+				f, err := downloadUrl(url, playlist.Id, i, "first")
+				if err != nil {
+					fmt.Println("Chunk download failed")
+					continue
+				}
+				chunkPath := decryptChunk(f, decryptionKey)
+				fmt.Println(chunkPath)
+				downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
+			}
+		}
+
+		if len(playlist.SecondViewURLs) > 0 {
+			for i, url := range playlist.SecondViewURLs {
+				f, err := downloadUrl(url, playlist.Id, i, "second")
+				if err != nil {
+					fmt.Println("Chunk download failed")
+					continue
+				}
+				chunkPath := decryptChunk(f, decryptionKey)
+				downloadedPlaylist.SecondViewChunks = append(downloadedPlaylist.SecondViewChunks, chunkPath)
+			}
+		}
+
+		downloadedPlaylist.Playlist = playlist
+		downloaded = append(downloaded, downloadedPlaylist)
+	}
+	return downloaded
 }
 
 func GetMetadata(lectures Lectures) {
