@@ -34,5 +34,22 @@ func main() {
 	} else {
 		chosenLectures = lectures[startLectureIndex : endLectureIndex+1]
 	}
-	GetMetadata(chosenLectures)
+
+	downloadedPlaylists := DownloadPlaylist(GetPlaylist(chosenLectures))
+	metadataFiles := CreateTempM3U8Files(downloadedPlaylists)
+
+	for _, file := range metadataFiles {
+		var left, right string
+		if file.FirstViewFile != "" {
+			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("%s LEFT VIEW.mp4", file.Playlist.Title))
+		}
+
+		if file.SecondViewFile != "" {
+			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("%s RIGHT VIEW.mp4", file.Playlist.Title))
+		}
+
+		if left != "" && right != "" {
+			JoinViews(left, right, file.Playlist.Title)
+		}
+	}
 }
