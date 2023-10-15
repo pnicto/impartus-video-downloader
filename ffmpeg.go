@@ -33,3 +33,16 @@ func JoinViews(leftFile, rightFile, title string) {
 
 	fmt.Println(outfile)
 }
+
+func JoinChunksFromM3U8(f string, title string) string {
+	config := GetConfig()
+	outfile := filepath.Join(config.DownloadLocation, title)
+
+	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-i", f, "-c", "copy", outfile)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + string(output))
+	}
+	fmt.Println("created outfile at", outfile)
+	return outfile
+}
