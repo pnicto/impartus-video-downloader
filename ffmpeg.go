@@ -21,15 +21,27 @@ func JoinChunks(path, title string) string {
 	return outfile
 }
 
-func JoinViews(leftFile, rightFile, title string) {
-	config := GetConfig()
-	outfile := fmt.Sprintf("%s BOTH.mkv", leftFile[:len(leftFile)-9])
+func JoinViews(leftFile, rightFile, name string) {
+	title := fmt.Sprintf("%s BOTH.mkv", name)
+	outfile := filepath.Join(config.DownloadLocation, title)
 
-	cmd := exec.Command("ffmpeg", "-y", "-threads", fmt.Sprint(config.Threads), "-hide_banner", "-i", rightFile, "-i", leftFile, "-map", "0", "-map", "1", "-c", "copy", outfile)
+	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-i", leftFile, "-i", rightFile, "-map", "0", "-map", "1", "-c", "copy", outfile)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
+	fmt.Println("created outfile at", outfile)
+}
 
-	fmt.Println(outfile)
+func JoinChunksFromM3U8(f string, title string) string {
+	config := GetConfig()
+	outfile := filepath.Join(config.DownloadLocation, title)
+
+	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-i", f, "-c", "copy", outfile)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + string(output))
+	}
+	fmt.Println("created outfile at", outfile)
+	return outfile
 }

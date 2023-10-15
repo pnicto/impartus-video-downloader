@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"sync"
 )
@@ -80,6 +81,11 @@ type (
 		Trending            int    `json:"trending"`
 		LastPosition        int    `json:"lastPosition"`
 	}
+
+	StreamInfo struct {
+		Quality string
+		URL     string
+	}
 )
 
 func LoginAndSetToken() {
@@ -130,7 +136,7 @@ func GetCourses() Courses {
 	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
-	resp := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&courses)
@@ -151,7 +157,7 @@ func GetLectures(course Course) Lectures {
 	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects/%d/lectures/%d", config.BaseUrl, course.SubjectID, course.SessionID)
-	resp := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&lectures)
@@ -213,7 +219,7 @@ func getM3U8(ttid int) string {
 	resolution := getResolution(config.Quality)
 	url := fmt.Sprintf("%s/fetchvideo?tag=LC&inm3u8=http%%3A%%2F%%2F172.16.3.45%%2F%%2Fdownload1%%2F%d_hls%%2F%s_27%%2F%s_27.m3u8", config.BaseUrl, ttid, resolution, resolution)
 
-	resp := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	m3u8Data, err := io.ReadAll(resp.Body)
@@ -229,30 +235,27 @@ func downloadChunk(ttid int, resolution string, view string, chunk int) string {
 	config := GetConfig()
 	chunkUrl := fmt.Sprintf("%s/fetchvideo?ts=http%%3A%%2F%%2F172.16.3.45%%2F%%2Fdownload1%%2F%d_hls%%2F%s_27%%2F%s_27%s_%04d_hls_0.ts", config.BaseUrl, ttid, resolution, resolution, view, chunk)
 
-	resp := GetClientAuthorized(chunkUrl, config.Token)
+	resp, _ := GetClientAuthorized(chunkUrl, config.Token)
 	defer resp.Body.Close()
 
 	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%04d_%s.ts.temp", ttid, chunk, view))
 	outFile, err := os.Create(outFilepath)
+	defer outFile.Close()
 	if err != nil {
 		fmt.Printf("Could not download chunk %d %d %v", ttid, chunk, err)
 	}
 
-	outFileContent, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Could not read chunk %d %d %v", ttid, chunk, err)
-	}
-
-	_, err = outFile.Write(outFileContent)
+	_, err = io.Copy(outFile, resp.Body)
 	if err != nil {
 		fmt.Printf("Could not write chunk %d %d %v", ttid, chunk, err)
 	}
+	outFile.Sync()
 
 	return outFilepath
 }
 
 // TODO: Refine decryptChunk
-func decryptChunk(filePath string, key []byte) {
+func decryptChunk(filePath string, key []byte) string {
 	outPath := filePath[:len(filePath)-5]
 
 	infile, err := os.ReadFile(filePath)
@@ -278,6 +281,7 @@ func decryptChunk(filePath string, key []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	return outPath
 }
 
 func writeM3U8FileConditionally(leftFile, rightFile *os.File, leftContent, rightContent string) {
@@ -412,6 +416,222 @@ func joinChunksConditionally(leftFilePath, rightFilePath, titleLeft, titleRight 
 	}
 }
 
+func getStreamInfos(lecture Lecture) []StreamInfo {
+	config := GetConfig()
+	var streamInfos []StreamInfo
+	uri := fmt.Sprintf("%s/fetchvideo?ttid=%d&token=%s&type=index.m3u8", config.BaseUrl, lecture.Ttid, config.Token)
+
+	resp, _ := GetClientAuthorized(uri, config.Token)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Println("Error closing response body")
+		}
+	}(resp.Body)
+
+	res, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error reading in response body")
+	}
+
+	lines := strings.Split(string(res), "\n")
+
+	pattern := `\d*x\d*`
+	re := regexp.MustCompile(pattern)
+
+	for _, line := range lines {
+		if strings.HasPrefix(line, "http") || strings.HasPrefix(line, "https") {
+			match := re.FindStringSubmatch(line)
+			if len(match) > 0 {
+				resolution := strings.Split(match[0], "x")
+				streamInfos = append(streamInfos, StreamInfo{Quality: resolution[1], URL: line})
+			}
+		}
+	}
+
+	return streamInfos
+}
+
+func getStreamUrl(streamInfos []StreamInfo) string {
+	config := GetConfig()
+	var streamUrl string
+	for _, streamInfo := range streamInfos {
+		if streamInfo.Quality == config.Quality {
+			streamUrl = streamInfo.URL
+			break
+		}
+	}
+	return streamUrl
+}
+
+func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
+	var parsedPlaylists []ParsedPlaylist
+	for _, lecture := range lectures {
+		streamInfos := getStreamInfos(lecture)
+		streamUrl := getStreamUrl(streamInfos)
+		resp, _ := GetClientAuthorized(streamUrl, GetConfig().Token)
+		defer resp.Body.Close()
+		scanner := bufio.NewScanner(resp.Body)
+		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic))
+	}
+
+	return parsedPlaylists
+}
+
+func downloadUrl(url string, id int, chunk int, view string) (string, error) {
+	resp, err := GetClientAuthorized(url, config.Token)
+	if err != nil {
+		return "", err
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Printf("Could not close response body %v", err)
+		}
+	}(resp.Body)
+
+	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%s_%04d.ts.temp", id, view, chunk))
+	outFile, err := os.Create(outFilepath)
+	defer outFile.Close()
+	if err != nil {
+		fmt.Printf("Could not download chunk %d %v", chunk, err)
+	}
+
+	_, err = io.Copy(outFile, resp.Body)
+	if err != nil {
+		fmt.Printf("Could not write chunk %d %v", chunk, err)
+	}
+	outFile.Sync()
+
+	return outFilepath, nil
+}
+
+type DownloadedPlaylist struct {
+	FirstViewChunks  []string
+	SecondViewChunks []string
+	Playlist         ParsedPlaylist
+}
+
+func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
+	config := GetConfig()
+	var downloaded []DownloadedPlaylist
+
+	err := os.MkdirAll(config.TempDirLocation, 0755)
+	if err != nil {
+		log.Fatalln("Could not create temp dir")
+	}
+
+	for _, playlist := range playlists {
+		var downloadedPlaylist DownloadedPlaylist
+
+		resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)
+		defer resp.Body.Close()
+		keyUrlContent, err := io.ReadAll(resp.Body)
+		if err != nil {
+			fmt.Printf("Could not get keyUrlContent %v", err)
+			panic(err)
+		}
+
+		decryptionKey := getDecryptionKey(keyUrlContent)
+
+		if len(playlist.FirstViewURLs) > 0 {
+			for i, url := range playlist.FirstViewURLs {
+				f, err := downloadUrl(url, playlist.Id, i, "first")
+				if err != nil {
+					fmt.Println("Chunk download failed")
+					continue
+				}
+				chunkPath := decryptChunk(f, decryptionKey)
+				downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
+			}
+		}
+
+		if len(playlist.SecondViewURLs) > 0 {
+			for i, url := range playlist.SecondViewURLs {
+				f, err := downloadUrl(url, playlist.Id, i, "second")
+				if err != nil {
+					fmt.Println("Chunk download failed")
+					continue
+				}
+				chunkPath := decryptChunk(f, decryptionKey)
+				downloadedPlaylist.SecondViewChunks = append(downloadedPlaylist.SecondViewChunks, chunkPath)
+			}
+		}
+
+		downloadedPlaylist.Playlist = playlist
+		downloaded = append(downloaded, downloadedPlaylist)
+	}
+	return downloaded
+}
+
+type M3U8File struct {
+	FirstViewFile  string
+	SecondViewFile string
+	Playlist       ParsedPlaylist
+}
+
+func CreateTempM3U8Files(downloadedPlaylists []DownloadedPlaylist) []M3U8File {
+	var m3u8Files []M3U8File
+
+	config := GetConfig()
+	for _, playlist := range downloadedPlaylists {
+		var m3u8File M3U8File
+
+		if len(playlist.FirstViewChunks) > 0 {
+			firstView, err := os.Create(fmt.Sprintf("%s/%d_first.m3u8", config.TempDirLocation, playlist.Playlist.Id))
+			defer firstView.Close()
+
+			if err != nil {
+				fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", playlist.Playlist.Id, err)
+			}
+
+			firstView.WriteString(`#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
+
+			for _, chunk := range playlist.FirstViewChunks {
+				firstView.WriteString("#EXTINF:1\n")
+				firstView.WriteString("../" + chunk + "\n")
+			}
+
+			firstView.WriteString("#EXT-X-ENDLIST")
+
+			m3u8File.FirstViewFile = firstView.Name()
+		}
+
+		if len(playlist.SecondViewChunks) > 0 {
+			secondView, err := os.Create(fmt.Sprintf("%s/%d_second.m3u8", config.TempDirLocation, playlist.Playlist.Id))
+			if err != nil {
+				fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", playlist.Playlist.Id, err)
+			}
+			defer secondView.Close()
+
+			secondView.WriteString(`#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
+
+			for _, chunk := range playlist.SecondViewChunks {
+				secondView.WriteString("#EXTINF:1\n")
+				secondView.WriteString("../" + chunk + "\n")
+			}
+
+			secondView.WriteString("#EXT-X-ENDLIST")
+
+			m3u8File.SecondViewFile = secondView.Name()
+		}
+
+		m3u8File.Playlist = playlist.Playlist
+		m3u8Files = append(m3u8Files, m3u8File)
+	}
+	return m3u8Files
+}
+
 func GetMetadata(lectures Lectures) {
 	config := GetConfig()
 	resolution := getResolution(config.Quality)
@@ -424,7 +644,7 @@ func GetMetadata(lectures Lectures) {
 		chunksCount := 0
 
 		keyUrl := fmt.Sprintf("%s/fetchvideo/getVideoKey?ttid=%d&keyid=0", config.BaseUrl, lecture.Ttid)
-		resp := GetClientAuthorized(keyUrl, config.Token)
+		resp, _ := GetClientAuthorized(keyUrl, config.Token)
 		defer resp.Body.Close()
 
 		keyUrlContent, err := io.ReadAll(resp.Body)

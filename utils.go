@@ -35,6 +35,18 @@ func CreateDirInsideDownloads(dirName string) string {
 
 func RemoveFile(path string) {
 	if err := os.Remove(path); err != nil {
-		fmt.Printf("Could not remove %s because %v", path, err)
+		fmt.Printf("Could not remove %s because %v\n", path, err)
 	}
+}
+
+// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
+func removeEmptyLectures(lectures Lectures) Lectures {
+	filteredLectures := lectures[:0]
+	for _, lecture := range lectures {
+		lowercaseTitle := strings.ToLower(lecture.Topic)
+		if !(lowercaseTitle == "no class" || lowercaseTitle == "no lecture") {
+			filteredLectures = append(filteredLectures, lecture)
+		}
+	}
+	return filteredLectures
 }
