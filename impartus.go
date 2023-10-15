@@ -542,7 +542,6 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 					continue
 				}
 				chunkPath := decryptChunk(f, decryptionKey)
-				fmt.Println(chunkPath)
 				downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
 			}
 		}
