@@ -442,7 +442,8 @@ func getStreamInfos(lecture Lecture) []StreamInfo {
 		if strings.HasPrefix(line, "http") || strings.HasPrefix(line, "https") {
 			match := re.FindStringSubmatch(line)
 			if len(match) > 0 {
-				streamInfos = append(streamInfos, StreamInfo{Quality: match[0], URL: line})
+				resolution := strings.Split(match[0], "x")
+				streamInfos = append(streamInfos, StreamInfo{Quality: resolution[1], URL: line})
 			}
 		}
 	}
