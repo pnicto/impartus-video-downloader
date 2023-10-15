@@ -565,6 +565,74 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 	return downloaded
 }
 
+type M3U8File struct {
+	FirstViewFile  string
+	SecondViewFile string
+	Playlist       ParsedPlaylist
+}
+
+func CreateTempM3U8Files(downloadedPlaylists []DownloadedPlaylist) []M3U8File {
+	var m3u8Files []M3U8File
+
+	config := GetConfig()
+	for _, playlist := range downloadedPlaylists {
+		var m3u8File M3U8File
+
+		if len(playlist.FirstViewChunks) > 0 {
+			firstView, err := os.Create(fmt.Sprintf("%s/%d_first.m3u8", config.TempDirLocation, playlist.Playlist.Id))
+			defer firstView.Close()
+
+			if err != nil {
+				fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", playlist.Playlist.Id, err)
+			}
+
+			firstView.WriteString(`#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
+
+			for _, chunk := range playlist.FirstViewChunks {
+				firstView.WriteString("#EXTINF:1\n")
+				firstView.WriteString("../" + chunk + "\n")
+			}
+
+			firstView.WriteString("#EXT-X-ENDLIST")
+
+			m3u8File.FirstViewFile = firstView.Name()
+		}
+
+		if len(playlist.SecondViewChunks) > 0 {
+			secondView, err := os.Create(fmt.Sprintf("%s/%d_second.m3u8", config.TempDirLocation, playlist.Playlist.Id))
+			if err != nil {
+				fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", playlist.Playlist.Id, err)
+			}
+			defer secondView.Close()
+
+			secondView.WriteString(`#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
+
+			for _, chunk := range playlist.SecondViewChunks {
+				secondView.WriteString("#EXTINF:1\n")
+				secondView.WriteString("../" + chunk + "\n")
+			}
+
+			secondView.WriteString("#EXT-X-ENDLIST")
+
+			m3u8File.SecondViewFile = secondView.Name()
+		}
+
+		m3u8File.Playlist = playlist.Playlist
+		m3u8Files = append(m3u8Files, m3u8File)
+	}
+	return m3u8Files
+}
+
 func GetMetadata(lectures Lectures) {
 	config := GetConfig()
 	resolution := getResolution(config.Quality)
