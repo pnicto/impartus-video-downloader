@@ -1,7 +1,7 @@
 archives:
   - format: zip
     files:
-      - sample.config.json
+      - config.json
       - README.md
       - LICENSE
 release:

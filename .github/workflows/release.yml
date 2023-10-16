@@ -19,6 +19,8 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: stable
+      - name: Rename sample.config.json to config.json
+        run: cat sample.config.json > config.json
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
