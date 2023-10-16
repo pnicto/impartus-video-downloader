@@ -456,7 +456,10 @@ func getStreamUrl(streamInfos []StreamInfo) string {
 	config := GetConfig()
 	var streamUrl string
 	for _, streamInfo := range streamInfos {
-		if streamInfo.Quality == config.Quality {
+		if (streamInfo.Quality == "450" || streamInfo.Quality == "480") && strings.HasPrefix(config.Quality, "4") {
+			streamUrl = streamInfo.URL
+			break
+		} else if streamInfo.Quality == config.Quality {
 			streamUrl = streamInfo.URL
 			break
 		}
