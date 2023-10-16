@@ -1022,7 +1022,7 @@ var testCases = []struct {
 }}
 
 func TestParser(t *testing.T) {
-	for _, tc := range testCases {
+	for id, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			f, err := os.Open(FixturesDirectory + "/" + tc.filename)
 			if err != nil {
@@ -1035,7 +1035,7 @@ func TestParser(t *testing.T) {
 			}()
 
 			scanner := bufio.NewScanner(f)
-			got := PlaylistParser(scanner)
+			got := PlaylistParser(scanner, id, tc.filename)
 
 			if got.KeyURL != tc.expectedKeyURL {
 				t.Errorf("Got keyURL %s, expected %s", got.KeyURL, tc.expectedKeyURL)
@@ -1057,7 +1057,7 @@ func TestParser(t *testing.T) {
 }
 
 func BenchmarkParser(b *testing.B) {
-	for _, tc := range testCases {
+	for id, tc := range testCases {
 		b.Run(tc.name, func(b *testing.B) {
 			f, err := os.Open(FixturesDirectory + "/" + tc.filename)
 			if err != nil {
@@ -1070,7 +1070,7 @@ func BenchmarkParser(b *testing.B) {
 			}()
 			scanner := bufio.NewScanner(f)
 			b.StartTimer()
-			_ = PlaylistParser(scanner)
+			_ = PlaylistParser(scanner, id, tc.filename)
 			b.StopTimer()
 		})
 	}
