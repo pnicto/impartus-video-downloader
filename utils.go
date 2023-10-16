@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -31,12 +30,6 @@ func CreateDirInsideDownloads(dirName string) string {
 	log.Printf("Created downloads directory for %s\n", dirName)
 
 	return dirPath
-}
-
-func RemoveFile(path string) {
-	if err := os.Remove(path); err != nil {
-		fmt.Printf("Could not remove %s because %v\n", path, err)
-	}
 }
 
 // https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
