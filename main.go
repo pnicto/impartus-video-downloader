@@ -38,18 +38,19 @@ func main() {
 
 	downloadedPlaylists := DownloadPlaylist(GetPlaylist(chosenLectures))
 	metadataFiles := CreateTempM3U8Files(downloadedPlaylists)
+	config := GetConfig()
 
 	for _, file := range metadataFiles {
 		var left, right string
-		if file.FirstViewFile != "" {
-			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+		if file.FirstViewFile != "" && config.Views != "left" {
+			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 		}
 
-		if file.SecondViewFile != "" {
-			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+		if file.SecondViewFile != "" && config.Views != "right" {
+			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 		}
 
-		if left != "" && right != "" {
+		if left != "" && right != "" && config.Views == "both" {
 			JoinViews(left, right, file.Playlist.Title)
 		}
 	}

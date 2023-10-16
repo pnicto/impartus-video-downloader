@@ -330,7 +330,7 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 
 		decryptionKey := getDecryptionKey(keyUrlContent)
 
-		if len(playlist.FirstViewURLs) > 0 {
+		if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
 			for i, url := range playlist.FirstViewURLs {
 				f, err := downloadUrl(url, playlist.Id, i, "first")
 				if err != nil {
@@ -342,7 +342,7 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 			}
 		}
 
-		if len(playlist.SecondViewURLs) > 0 {
+		if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
 			for i, url := range playlist.SecondViewURLs {
 				f, err := downloadUrl(url, playlist.Id, i, "second")
 				if err != nil {
