@@ -1035,7 +1035,7 @@ func TestParser(t *testing.T) {
 			}()
 
 			scanner := bufio.NewScanner(f)
-			got := PlaylistParser(scanner, id, tc.filename)
+			got := PlaylistParser(scanner, id, tc.filename, 1)
 
 			if got.KeyURL != tc.expectedKeyURL {
 				t.Errorf("Got keyURL %s, expected %s", got.KeyURL, tc.expectedKeyURL)
@@ -1070,7 +1070,7 @@ func BenchmarkParser(b *testing.B) {
 			}()
 			scanner := bufio.NewScanner(f)
 			b.StartTimer()
-			_ = PlaylistParser(scanner, id, tc.filename)
+			_ = PlaylistParser(scanner, id, tc.filename, 2)
 			b.StopTimer()
 		})
 	}
