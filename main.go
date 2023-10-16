@@ -42,11 +42,11 @@ func main() {
 	for _, file := range metadataFiles {
 		var left, right string
 		if file.FirstViewFile != "" {
-			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("%s LEFT VIEW.mp4", file.Playlist.Title))
+			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 		}
 
 		if file.SecondViewFile != "" {
-			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("%s RIGHT VIEW.mp4", file.Playlist.Title))
+			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 		}
 
 		if left != "" && right != "" {
