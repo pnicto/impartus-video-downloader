@@ -20,16 +20,16 @@ func ChooseCourse(courses Courses) int {
 	fmt.Println("Enter a number")
 
 	for {
-	    _, err := fmt.Scanf("%d\n", &choice)
-	    if err != nil {
-	        fmt.Println("Invalid input. Please enter a valid number.")
-	        continue
-	    }
-	    if choice < 1 || choice > len(courses) {
-	        fmt.Println("Invalid choice. Please enter a valid number within the range.")
-	        continue
-	    }
-	    break
+		_, err := fmt.Scanf("%d\n", &choice)
+		if err != nil {
+			fmt.Println("Invalid input. Please enter a valid number.")
+			continue
+		}
+		if choice < 1 || choice > len(courses) {
+			fmt.Println("Invalid choice. Please enter a valid number within the range.")
+			continue
+		}
+		break
 	}
 	log.Printf("User chose %d\n", choice)
 	log.Printf("Index is %d\n", choice-1)
@@ -55,16 +55,16 @@ func ChooseLectures(lectures Lectures) (int, int, bool) {
 	fmt.Println("Enter a range (e.g., 1 5 for lectures 1 through 5):")
 
 	for {
-	    _, err := fmt.Scanf("%d %d\n", &startIndex, &endIndex)
-	    if err != nil {
-	        fmt.Println("Invalid input. Please enter two valid numbers separated by a space.")
-	        continue
-	    }
-	    if startIndex < 1 || endIndex < 1 || startIndex > len(lectures) || endIndex > len(lectures) || startIndex > endIndex {
-	        fmt.Println("Invalid range. Please enter a valid range within the lecture indices.")
-	        continue
-	    }
-	    break
+		_, err := fmt.Scanf("%d %d\n", &startIndex, &endIndex)
+		if err != nil {
+			fmt.Println("Invalid input. Please enter two valid numbers separated by a space.")
+			continue
+		}
+		if startIndex < 1 || endIndex < 1 || startIndex > len(lectures) || endIndex > len(lectures) || startIndex > endIndex {
+			fmt.Println("Invalid range. Please enter a valid range within the lecture indices.")
+			continue
+		}
+		break
 	}
 
 	log.Printf("User chose %d %d\n", startIndex, endIndex)
