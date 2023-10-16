@@ -45,6 +45,10 @@ func ChooseLectures(lectures Lectures) (int, int, bool) {
 	var startIndex int
 	var endIndex int
 
+	for left, right := 0, len(lectures)-1; left < right; left, right = left+1, right-1 {
+		lectures[left], lectures[right] = lectures[right], lectures[left]
+	}
+
 	fmt.Println("Choose the lecture range you want to download")
 	for i, lecture := range lectures {
 		fmt.Printf("%3d) LEC %3d %s\n", i+1, lecture.SeqNo, lecture.Topic)
