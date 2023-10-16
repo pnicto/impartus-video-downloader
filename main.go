@@ -51,7 +51,7 @@ func main() {
 		}
 
 		if left != "" && right != "" && config.Views == "both" {
-			JoinViews(left, right, file.Playlist.Title)
+			JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
 		}
 	}
 }
