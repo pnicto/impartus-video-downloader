@@ -5,6 +5,5 @@
   "quality": "720",
   "views": "both",
   "downloadLocation": "./downloads",
-  "tempDirLocation": "./.temp",
-  "threads": 30
+  "tempDirLocation": "./.temp"
 }
