@@ -14,9 +14,10 @@ type ParsedPlaylist struct {
 	SecondViewURLs   []string
 	Id               int
 	Title            string
+	SeqNo            int
 }
 
-func PlaylistParser(scanner *bufio.Scanner, id int, title string) ParsedPlaylist {
+func PlaylistParser(scanner *bufio.Scanner, id int, title string, seqNo int) ParsedPlaylist {
 	var parsedOutput ParsedPlaylist
 	var isFirstView = true
 	var firstViewUrls []string
@@ -24,6 +25,7 @@ func PlaylistParser(scanner *bufio.Scanner, id int, title string) ParsedPlaylist
 
 	parsedOutput.Id = id
 	parsedOutput.Title = title
+	parsedOutput.SeqNo = seqNo
 
 	for scanner.Scan() {
 		l := scanner.Text()

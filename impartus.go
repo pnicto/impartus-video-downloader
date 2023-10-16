@@ -268,7 +268,7 @@ func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
 		resp, _ := GetClientAuthorized(streamUrl, GetConfig().Token)
 		defer resp.Body.Close()
 		scanner := bufio.NewScanner(resp.Body)
-		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic))
+		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic, lecture.SeqNo))
 	}
 
 	return parsedPlaylists
