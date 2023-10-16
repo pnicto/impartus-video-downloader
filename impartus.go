@@ -7,6 +7,7 @@ import (
 	"crypto/cipher"
 	"encoding/json"
 	"fmt"
+	"github.com/schollz/progressbar/v3"
 	"io"
 	"log"
 	"net/http"
@@ -331,26 +332,32 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 		decryptionKey := getDecryptionKey(keyUrlContent)
 
 		if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
+			bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading right view chunks", playlist.SeqNo)))
 			for i, url := range playlist.FirstViewURLs {
 				f, err := downloadUrl(url, playlist.Id, i, "first")
 				if err != nil {
-					fmt.Println("Chunk download failed")
+					fmt.Println()
+					fmt.Println("Chunk", i, "download failed")
 					continue
 				}
 				chunkPath := decryptChunk(f, decryptionKey)
 				downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
+				bar.Add(1)
 			}
 		}
 
 		if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
+			bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading left view chunks", playlist.SeqNo)))
 			for i, url := range playlist.SecondViewURLs {
 				f, err := downloadUrl(url, playlist.Id, i, "second")
 				if err != nil {
-					fmt.Println("Chunk download failed")
+					fmt.Println()
+					fmt.Println("Chunk", i, "download failed")
 					continue
 				}
 				chunkPath := decryptChunk(f, decryptionKey)
 				downloadedPlaylist.SecondViewChunks = append(downloadedPlaylist.SecondViewChunks, chunkPath)
+				bar.Add(1)
 			}
 		}
 
