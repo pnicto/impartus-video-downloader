@@ -1,5 +1,3 @@
-Note: Work in progress. (Currently on halt due to PS1)
-
 # impartus video downloader
 
 *   [impartus video downloader](#impartus-video-downloader)
