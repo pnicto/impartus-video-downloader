@@ -7,8 +7,8 @@
 
 ## How to use
 
+* Have ffmpeg installed on your pc and have it in your PATH.
 *   [Download](https://github.com/pnicto/impartus-video-downloader/releases/latest) the latest release and extract it.
-*   Rename `sample.config.json` to `config.json` inside the extracted folder.
 *   Add your username/email and password in `config.json`.
 *   Make suitable changes to the config as per your needs. Read [here](#configuration) for more information on configuration.
 *   Execute the binary.
@@ -35,6 +35,6 @@ The comments beside the fields tell the allowed values.
   "views": "both", // Accepted values: "left", "right", "both"
   "downloadLocation": "./downloads", // Directory where the final file is stored to
   "tempDirLocation": "./.temp", // Directory to store the chunks (directory can be deleted when the program is not running)
-  "threads": 50 // Optional: If removed the default value is 10. Idk how this affects the speed but I think it does
+  "slides": true // Accepted values: true, false to download the slides from impartus
 }
 ```
