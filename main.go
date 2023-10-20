@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 func main() {
@@ -36,9 +38,28 @@ func main() {
 		chosenLectures = lectures[startLectureIndex : endLectureIndex+1]
 	}
 
+	config := GetConfig()
+	if config.Slides {
+		err := os.MkdirAll("./slides", 0755)
+		if err != nil {
+			log.Fatalf("Could not create slides directory with err %v\n", err)
+		}
+		dirName := courses[courseIndex].SubjectName
+		dirName = strings.ReplaceAll(dirName, "/", "_")
+		dirName = strings.ReplaceAll(dirName, "\\", "_")
+		dirPath := filepath.Join("./slides", dirName)
+		err = os.MkdirAll(dirPath, 0755)
+		if err != nil {
+			log.Fatalf("Could not create directory %s with err %v\n", dirPath, err)
+		}
+
+		for _, lecture := range chosenLectures {
+			DownloadLectureSlides(lecture)
+		}
+	}
+
 	downloadedPlaylists := DownloadPlaylist(GetPlaylist(chosenLectures))
 	metadataFiles := CreateTempM3U8Files(downloadedPlaylists)
-	config := GetConfig()
 
 	for _, file := range metadataFiles {
 		var left, right string

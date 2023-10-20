@@ -17,6 +17,7 @@ type Config struct {
 	DownloadLocation string
 	Token            string
 	TempDirLocation  string
+	Slides           bool
 }
 
 var config Config

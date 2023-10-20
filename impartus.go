@@ -434,3 +434,17 @@ func CreateTempM3U8Files(downloadedPlaylists []DownloadedPlaylist) []M3U8File {
 	}
 	return m3u8Files
 }
+
+func DownloadLectureSlides(lecture Lecture) {
+	config := GetConfig()
+	path := fmt.Sprintf("./slides/%s/L%03d %s.pdf", lecture.SubjectName, lecture.SeqNo, lecture.Topic)
+	f, err := os.Create(path)
+	if err != nil {
+		fmt.Println("Could not create file", path, "with error", err)
+	}
+	url := fmt.Sprintf("%s/videos/%d/auto-generated-pdf", config.BaseUrl, lecture.VideoID)
+	resp, _ := GetClientAuthorized(url, config.Token)
+	defer resp.Body.Close()
+	num, _ := io.Copy(f, resp.Body)
+	fmt.Printf("Downloaded %d bytes\n", num)
+}
