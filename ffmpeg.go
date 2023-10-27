@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 )
@@ -16,6 +17,16 @@ func JoinViews(leftFile, rightFile, name string) {
 		fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
 	fmt.Println("created outfile at", outfile)
+	err = os.Remove(leftFile)
+	if err != nil {
+		fmt.Println("Could not remove", leftFile)
+	}
+	fmt.Println("Removed", leftFile)
+	err = os.Remove(rightFile)
+	if err != nil {
+		fmt.Println("Could not remove", rightFile)
+	}
+	fmt.Println("Removed", rightFile)
 }
 
 func JoinChunksFromM3U8(f string, title string) string {
