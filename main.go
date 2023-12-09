@@ -75,7 +75,4 @@ func main() {
 			JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
 		}
 	}
-	if err := os.RemoveAll(config.TempDirLocation); err != nil {
-		fmt.Println("Could not remove temp dir")
-	}
 }
