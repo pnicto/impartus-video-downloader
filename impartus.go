@@ -216,7 +216,11 @@ func getStreamInfos(lecture Lecture) []StreamInfo {
 	var streamInfos []StreamInfo
 	uri := fmt.Sprintf("%s/fetchvideo?ttid=%d&token=%s&type=index.m3u8", config.BaseUrl, lecture.Ttid, config.Token)
 
-	resp, _ := GetClientAuthorized(uri, config.Token)
+	resp, err := GetClientAuthorized(uri, config.Token)
+	if err != nil {
+		log.Println("Could not get stream infos", err)
+		return []StreamInfo{}
+	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
