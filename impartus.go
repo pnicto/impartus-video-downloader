@@ -7,7 +7,6 @@ import (
 	"crypto/cipher"
 	"encoding/json"
 	"fmt"
-	"github.com/schollz/progressbar/v3"
 	"io"
 	"log"
 	"net/http"
@@ -15,6 +14,8 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/schollz/progressbar/v3"
 )
 
 type (
