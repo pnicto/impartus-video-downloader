@@ -64,15 +64,16 @@ func main() {
 	for _, file := range metadataFiles {
 		var left, right string
 		if file.FirstViewFile != "" && config.Views != "left" {
-			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", startLectureIndex+1, file.Playlist.Title))
 		}
 
 		if file.SecondViewFile != "" && config.Views != "right" {
-			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", startLectureIndex+1, file.Playlist.Title))
 		}
 
 		if left != "" && right != "" && config.Views == "both" {
-			JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
+			JoinViews(left, right, fmt.Sprintf("LEC %03d %s", startLectureIndex+1, file.Playlist.Title))
 		}
+		startLectureIndex++
 	}
 }
