@@ -268,10 +268,15 @@ func getStreamUrl(streamInfos []StreamInfo) string {
 
 func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
 	var parsedPlaylists []ParsedPlaylist
+
 	for _, lecture := range lectures {
 		streamInfos := getStreamInfos(lecture)
 		streamUrl := getStreamUrl(streamInfos)
-		resp, _ := GetClientAuthorized(streamUrl, GetConfig().Token)
+		resp, err := GetClientAuthorized(streamUrl, GetConfig().Token)
+		if err != nil {
+			fmt.Println("Could not get stream url", err)
+			continue
+		}
 		defer resp.Body.Close()
 		scanner := bufio.NewScanner(resp.Body)
 		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic, lecture.SeqNo))
