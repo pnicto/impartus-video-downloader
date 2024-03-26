@@ -6,5 +6,5 @@
   "views": "both",
   "downloadLocation": "./downloads",
   "tempDirLocation": "./.temp",
-  "slides": true
+  "slides": false
 }
