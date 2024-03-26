@@ -20,66 +20,66 @@ import (
 
 type (
 	LoginResponse struct {
-		Success  bool   `json:"success"`
 		Message  string `json:"message"`
-		UserType int    `json:"userType"`
 		Token    string `json:"token"`
+		UserType int    `json:"userType"`
+		Success  bool   `json:"success"`
 	}
 
 	Courses []Course
 	Course  struct {
-		SubjectID            int    `json:"subjectId"`
-		SubjectName          string `json:"subjectName"`
-		SessionID            int    `json:"sessionId"`
-		SessionName          string `json:"sessionName"`
-		ProfessorID          int    `json:"professorId"`
-		ProfessorName        string `json:"professorName"`
-		DepartmentID         int    `json:"departmentId"`
-		Department           string `json:"department"`
-		InstituteID          int    `json:"instituteId"`
 		Institute            string `json:"institute"`
+		SubjectName          string `json:"subjectName"`
+		SessionName          string `json:"sessionName"`
+		ProfessorName        string `json:"professorName"`
+		Department           string `json:"department"`
 		Coverpic             string `json:"coverpic"`
+		SessionID            int    `json:"sessionId"`
+		ProfessorID          int    `json:"professorId"`
+		DepartmentID         int    `json:"departmentId"`
+		InstituteID          int    `json:"instituteId"`
+		SubjectID            int    `json:"subjectId"`
 		VideoCount           int    `json:"videoCount"`
 		FlippedLecturesCount int    `json:"flippedLecturesCount"`
 	}
 
 	Lectures []Lecture
 	Lecture  struct {
-		Type                int    `json:"type"`
-		Ttid                int    `json:"ttid"`
-		SeqNo               int    `json:"seqNo"`
-		Status              int    `json:"status"`
-		VideoID             int    `json:"videoId"`
-		SubjectID           int    `json:"subjectId"`
-		SubjectName         string `json:"subjectName"`
-		Selfenroll          int    `json:"selfenroll"`
+		SubjectDescription  any    `json:"subjectDescription"`
+		SessionName         string `json:"sessionName"`
+		ClassroomName       string `json:"classroomName"`
+		FilePath2           string `json:"filePath2"`
+		FilePath            string `json:"filePath"`
+		EndTime             string `json:"endTime"`
+		Topic               string `json:"topic"`
+		StartTime           string `json:"startTime"`
 		Coverpic            string `json:"coverpic"`
 		SubjectCode         string `json:"subjectCode"`
-		SubjectDescription  any    `json:"subjectDescription"`
-		InstituteID         int    `json:"instituteId"`
-		Institute           string `json:"institute"`
-		DepartmentID        int    `json:"departmentId"`
-		Department          string `json:"department"`
-		ClassroomID         int    `json:"classroomId"`
-		ClassroomName       string `json:"classroomName"`
-		SessionID           int    `json:"sessionId"`
-		SessionName         string `json:"sessionName"`
-		Topic               string `json:"topic"`
-		ProfessorID         int    `json:"professorId"`
-		ProfessorName       string `json:"professorName"`
 		ProfessorImageURL   string `json:"professorImageUrl"`
-		StartTime           string `json:"startTime"`
-		EndTime             string `json:"endTime"`
-		ActualDuration      int    `json:"actualDuration"`
+		ProfessorName       string `json:"professorName"`
+		Institute           string `json:"institute"`
+		SubjectName         string `json:"subjectName"`
+		Department          string `json:"department"`
+		VideoID             int    `json:"videoId"`
 		TapNToggle          int    `json:"tapNToggle"`
-		FilePath            string `json:"filePath"`
-		FilePath2           string `json:"filePath2"`
+		Trending            int    `json:"trending"`
+		SeqNo               int    `json:"seqNo"`
+		DepartmentID        int    `json:"departmentId"`
+		ProfessorID         int    `json:"professorId"`
+		InstituteID         int    `json:"instituteId"`
+		Ttid                int    `json:"ttid"`
+		Selfenroll          int    `json:"selfenroll"`
+		SubjectID           int    `json:"subjectId"`
+		ActualDuration      int    `json:"actualDuration"`
+		ClassroomID         int    `json:"classroomId"`
+		Type                int    `json:"type"`
+		Status              int    `json:"status"`
 		SlideCount          int    `json:"slideCount"`
 		Noaudio             int    `json:"noaudio"`
 		Views               int    `json:"views"`
 		DocumentCount       int    `json:"documentCount"`
 		LessonPlanAvailable int    `json:"lessonPlanAvailable"`
-		Trending            int    `json:"trending"`
+		SessionID           int    `json:"sessionId"`
 		LastPosition        int    `json:"lastPosition"`
 	}
 
