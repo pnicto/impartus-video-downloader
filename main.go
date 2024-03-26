@@ -76,4 +76,8 @@ func main() {
 		}
 		startLectureIndex++
 	}
+
+	fmt.Print("\n\n")
+	fmt.Println("It is recommended that you use this tool as sparingly as possible. Heavy usage of this tool puts more strain on impartus server leading to potential IP bans, breakingAPI changes and possibly legal action.")
+	fmt.Println("If this project helped you, consider starring it on GitHub: https://github.com/pnicto/impartus-video-downloader")
 }
