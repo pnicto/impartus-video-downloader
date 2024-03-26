@@ -359,7 +359,7 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 				f, err := downloadUrl(url, playlist.Id, i, "first")
 				if err != nil {
 					fmt.Println()
-					fmt.Println("Chunk", i, "download failed")
+					fmt.Println("[WARNING] Chunk", i, "download failed")
 					continue
 				}
 				chunkPath := decryptChunk(f, decryptionKey)
@@ -374,7 +374,7 @@ func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
 				f, err := downloadUrl(url, playlist.Id, i, "second")
 				if err != nil {
 					fmt.Println()
-					fmt.Println("Chunk", i, "download failed")
+					fmt.Println("[WARNING] Chunk", i, "download failed")
 					continue
 				}
 				chunkPath := decryptChunk(f, decryptionKey)
