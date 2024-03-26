@@ -100,10 +100,22 @@ func LoginAndSetToken() {
 		log.Fatalf("Could not marshal login body %v", err)
 	}
 
-	response, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
+	if err != nil {
+		log.Fatalf("Could not create request %v", err)
+	}
+
+	req.Header.Add("Content-Type", "application/json;charset=UTF-8")
+	req.Header.Add("Accept", "application/json, text/plain, */*")
+	req.Header.Add("Referer", "https://bitshyd.impartus.com/login/")
+	req.Header.Add("User-Agent", GetRandomUserAgent())
+
+	response, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("Login failed with error %v", err)
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode == http.StatusUnauthorized {
 		fmt.Println("Wrong credentials please retry")

@@ -13,6 +13,7 @@ func GetClientAuthorized(url string, token string) (*http.Response, error) {
 	}
 
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	req.Header.Set("User-Agent", GetRandomUserAgent())
 
 	client := &http.Client{}
 
