@@ -17,6 +17,7 @@ type Config struct {
 	DownloadLocation string
 	Token            string
 	TempDirLocation  string
+	NumWorkers       int
 	Slides           bool
 }
 
@@ -41,6 +42,9 @@ func parseConfig(configLocation string) *Config {
 		config.TempDirLocation = "./temp"
 	}
 
+	if config.NumWorkers == 0 {
+		config.NumWorkers = 5
+	}
 
 	return &config
 }

@@ -66,7 +66,7 @@ func main() {
 		log.Fatalln("Could not create temp dir")
 	}
 
-	const numWorkers = 10
+	numWorkers := config.NumWorkers
 	playlistJobs := make(chan ParsedPlaylist, numWorkers)
 
 	var joinWg sync.WaitGroup
