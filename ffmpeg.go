@@ -16,17 +16,17 @@ func JoinViews(leftFile, rightFile, name string) {
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
-	fmt.Println("created outfile at", outfile)
+	// fmt.Println("created outfile at", outfile)
 	err = os.Remove(leftFile)
 	if err != nil {
 		fmt.Println("Could not remove", leftFile)
 	}
-	fmt.Println("Removed", leftFile)
+	// fmt.Println("Removed", leftFile)
 	err = os.Remove(rightFile)
 	if err != nil {
 		fmt.Println("Could not remove", rightFile)
 	}
-	fmt.Println("Removed", rightFile)
+	// fmt.Println("Removed", rightFile)
 }
 
 func JoinChunksFromM3U8(f string, title string) string {
@@ -38,6 +38,6 @@ func JoinChunksFromM3U8(f string, title string) string {
 	if err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + string(output))
 	}
-	fmt.Println("created outfile at", outfile)
+	// fmt.Println("created outfile at", outfile)
 	return outfile
 }

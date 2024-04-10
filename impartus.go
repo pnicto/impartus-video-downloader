@@ -350,8 +350,8 @@ func DownloadPlaylist(playlist ParsedPlaylist) DownloadedPlaylist {
 		for i, url := range playlist.FirstViewURLs {
 			f, err := downloadUrl(url, playlist.Id, i, "first")
 			if err != nil {
-				fmt.Println()
-				fmt.Println("[WARNING] Chunk", i, "download failed")
+				// fmt.Println()
+				// fmt.Println("[WARNING] Chunk", i, "download failed")
 				continue
 			}
 			chunkPath := decryptChunk(f, decryptionKey)
@@ -365,8 +365,8 @@ func DownloadPlaylist(playlist ParsedPlaylist) DownloadedPlaylist {
 		for i, url := range playlist.SecondViewURLs {
 			f, err := downloadUrl(url, playlist.Id, i, "second")
 			if err != nil {
-				fmt.Println()
-				fmt.Println("[WARNING] Chunk", i, "download failed")
+				// fmt.Println()
+				// fmt.Println("[WARNING] Chunk", i, "download failed")
 				continue
 			}
 			chunkPath := decryptChunk(f, decryptionKey)

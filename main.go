@@ -73,14 +73,14 @@ func main() {
 	for i := 0; i < numWorkers; i++ {
 		go func() {
 			for playlist := range playlistJobs {
-				fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
+				// fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
 				downloadedPlaylist := DownloadPlaylist(playlist)
 				metadataFile := CreateTempM3U8File(downloadedPlaylist)
-				fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
+				// fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
 
 				go func(file M3U8File) {
 					defer joinWg.Done()
-					fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
+					// fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 					var left, right string
 					if file.FirstViewFile != "" && config.Views != "left" {
 						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
@@ -92,14 +92,14 @@ func main() {
 					if left != "" && right != "" && config.Views == "both" {
 						JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
 					}
-					fmt.Println("Joined chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
+					// fmt.Println("Joined chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 				}(metadataFile)
 			}
 		}()
 	}
 
 	for _, playlist := range playlists {
-		fmt.Println("Adding playlist to job queue: ", playlist.Title, playlist.SeqNo)
+		// fmt.Println("Adding playlist to job queue: ", playlist.Title, playlist.SeqNo)
 		joinWg.Add(1)
 		playlistJobs <- playlist
 	}
