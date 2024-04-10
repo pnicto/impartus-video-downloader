@@ -3,11 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 func main() {
@@ -69,16 +73,38 @@ func main() {
 	numWorkers := config.NumWorkers
 	playlistJobs := make(chan ParsedPlaylist, numWorkers)
 
+	p := mpb.New()
+
+	downloadBar := p.AddBar(int64(len(playlists)),
+		mpb.PrependDecorators(
+			decor.Name("Downloaded "),
+			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
+		),
+		mpb.AppendDecorators(decor.Percentage()),
+		mpb.BarPriority(math.MaxInt64-1),
+	)
+
+	joiningBar := p.AddBar(int64(len(playlists)),
+		mpb.PrependDecorators(
+			decor.Name("Joined "),
+			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
+		),
+		mpb.AppendDecorators(decor.Percentage()),
+		mpb.BarPriority(math.MaxInt64),
+	)
+
 	var joinWg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
 		go func() {
 			for playlist := range playlistJobs {
 				// fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
-				downloadedPlaylist := DownloadPlaylist(playlist)
+				downloadedPlaylist := DownloadPlaylist(playlist, p)
 				metadataFile := CreateTempM3U8File(downloadedPlaylist)
+				downloadBar.Increment()
 				// fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
 
 				go func(file M3U8File) {
+					defer joiningBar.Increment()
 					defer joinWg.Done()
 					// fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 					var left, right string
@@ -105,6 +131,7 @@ func main() {
 	}
 
 	joinWg.Wait()
+	p.Wait()
 	close(playlistJobs)
 
 	fmt.Print("\n\n")
