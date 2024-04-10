@@ -37,6 +37,11 @@ func parseConfig(configLocation string) *Config {
 		panic(err)
 	}
 
+	if config.TempDirLocation == "" {
+		config.TempDirLocation = "./temp"
+	}
+
+
 	return &config
 }
 
