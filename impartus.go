@@ -331,62 +331,52 @@ type DownloadedPlaylist struct {
 	Playlist         ParsedPlaylist
 }
 
-func DownloadPlaylist(playlists []ParsedPlaylist) []DownloadedPlaylist {
+func DownloadPlaylist(playlist ParsedPlaylist) DownloadedPlaylist {
 	config := GetConfig()
-	var downloaded []DownloadedPlaylist
+	var downloadedPlaylist DownloadedPlaylist
 
-	err := os.MkdirAll(config.TempDirLocation, 0755)
+	resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)
+	defer resp.Body.Close()
+	keyUrlContent, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln("Could not create temp dir")
+		fmt.Printf("Could not get keyUrlContent %v", err)
+		panic(err)
 	}
 
-	for _, playlist := range playlists {
-		var downloadedPlaylist DownloadedPlaylist
+	decryptionKey := getDecryptionKey(keyUrlContent)
 
-		resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)
-		defer resp.Body.Close()
-		keyUrlContent, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Printf("Could not get keyUrlContent %v", err)
-			panic(err)
-		}
-
-		decryptionKey := getDecryptionKey(keyUrlContent)
-
-		if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
-			bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading right view chunks", playlist.SeqNo)))
-			for i, url := range playlist.FirstViewURLs {
-				f, err := downloadUrl(url, playlist.Id, i, "first")
-				if err != nil {
-					fmt.Println()
-					fmt.Println("[WARNING] Chunk", i, "download failed")
-					continue
-				}
-				chunkPath := decryptChunk(f, decryptionKey)
-				downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
-				bar.Add(1)
+	if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
+		bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading right view chunks", playlist.SeqNo)))
+		for i, url := range playlist.FirstViewURLs {
+			f, err := downloadUrl(url, playlist.Id, i, "first")
+			if err != nil {
+				fmt.Println()
+				fmt.Println("[WARNING] Chunk", i, "download failed")
+				continue
 			}
+			chunkPath := decryptChunk(f, decryptionKey)
+			downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
+			bar.Add(1)
 		}
-
-		if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
-			bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading left view chunks", playlist.SeqNo)))
-			for i, url := range playlist.SecondViewURLs {
-				f, err := downloadUrl(url, playlist.Id, i, "second")
-				if err != nil {
-					fmt.Println()
-					fmt.Println("[WARNING] Chunk", i, "download failed")
-					continue
-				}
-				chunkPath := decryptChunk(f, decryptionKey)
-				downloadedPlaylist.SecondViewChunks = append(downloadedPlaylist.SecondViewChunks, chunkPath)
-				bar.Add(1)
-			}
-		}
-
-		downloadedPlaylist.Playlist = playlist
-		downloaded = append(downloaded, downloadedPlaylist)
 	}
-	return downloaded
+
+	if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
+		bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading left view chunks", playlist.SeqNo)))
+		for i, url := range playlist.SecondViewURLs {
+			f, err := downloadUrl(url, playlist.Id, i, "second")
+			if err != nil {
+				fmt.Println()
+				fmt.Println("[WARNING] Chunk", i, "download failed")
+				continue
+			}
+			chunkPath := decryptChunk(f, decryptionKey)
+			downloadedPlaylist.SecondViewChunks = append(downloadedPlaylist.SecondViewChunks, chunkPath)
+			bar.Add(1)
+		}
+	}
+
+	downloadedPlaylist.Playlist = playlist
+	return downloadedPlaylist
 }
 
 type M3U8File struct {
@@ -395,66 +385,62 @@ type M3U8File struct {
 	Playlist       ParsedPlaylist
 }
 
-func CreateTempM3U8Files(downloadedPlaylists []DownloadedPlaylist) []M3U8File {
-	var m3u8Files []M3U8File
-
+func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 	config := GetConfig()
-	for _, playlist := range downloadedPlaylists {
-		var m3u8File M3U8File
+	var m3u8File M3U8File
 
-		if len(playlist.FirstViewChunks) > 0 {
-			firstView, err := os.Create(fmt.Sprintf("%s/%d_first.m3u8", config.TempDirLocation, playlist.Playlist.Id))
-			defer firstView.Close()
+	if len(downloadedPlaylist.FirstViewChunks) > 0 {
+		firstView, err := os.Create(fmt.Sprintf("%s/%d_first.m3u8", config.TempDirLocation, downloadedPlaylist.Playlist.Id))
+		defer firstView.Close()
 
-			if err != nil {
-				fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", playlist.Playlist.Id, err)
-			}
+		if err != nil {
+			fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", downloadedPlaylist.Playlist.Id, err)
+		}
 
-			firstView.WriteString(`#EXTM3U
+		firstView.WriteString(`#EXTM3U
 #EXT-X-VERSION:3
 #EXT-X-MEDIA-SEQUENCE:0
 #EXT-X-ALLOW-CACHE:YES
 #EXT-X-TARGETDURATION:11
 #EXT-X-KEY:METHOD=NONE`)
 
-			for _, chunk := range playlist.FirstViewChunks {
-				firstView.WriteString("#EXTINF:1\n")
-				firstView.WriteString("../" + chunk + "\n")
-			}
-
-			firstView.WriteString("#EXT-X-ENDLIST")
-
-			m3u8File.FirstViewFile = firstView.Name()
+		for _, chunk := range downloadedPlaylist.FirstViewChunks {
+			firstView.WriteString("#EXTINF:1\n")
+			firstView.WriteString("../" + chunk + "\n")
 		}
 
-		if len(playlist.SecondViewChunks) > 0 {
-			secondView, err := os.Create(fmt.Sprintf("%s/%d_second.m3u8", config.TempDirLocation, playlist.Playlist.Id))
-			if err != nil {
-				fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", playlist.Playlist.Id, err)
-			}
-			defer secondView.Close()
+		firstView.WriteString("#EXT-X-ENDLIST")
 
-			secondView.WriteString(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-MEDIA-SEQUENCE:0
-#EXT-X-ALLOW-CACHE:YES
-#EXT-X-TARGETDURATION:11
-#EXT-X-KEY:METHOD=NONE`)
-
-			for _, chunk := range playlist.SecondViewChunks {
-				secondView.WriteString("#EXTINF:1\n")
-				secondView.WriteString("../" + chunk + "\n")
-			}
-
-			secondView.WriteString("#EXT-X-ENDLIST")
-
-			m3u8File.SecondViewFile = secondView.Name()
-		}
-
-		m3u8File.Playlist = playlist.Playlist
-		m3u8Files = append(m3u8Files, m3u8File)
+		m3u8File.FirstViewFile = firstView.Name()
 	}
-	return m3u8Files
+
+	if len(downloadedPlaylist.SecondViewChunks) > 0 {
+		secondView, err := os.Create(fmt.Sprintf("%s/%d_second.m3u8", config.TempDirLocation, downloadedPlaylist.Playlist.Id))
+		if err != nil {
+			fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", downloadedPlaylist.Playlist.Id, err)
+		}
+		defer secondView.Close()
+
+		secondView.WriteString(`#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
+
+		for _, chunk := range downloadedPlaylist.SecondViewChunks {
+			secondView.WriteString("#EXTINF:1\n")
+			secondView.WriteString("../" + chunk + "\n")
+		}
+
+		secondView.WriteString("#EXT-X-ENDLIST")
+
+		m3u8File.SecondViewFile = secondView.Name()
+	}
+
+	m3u8File.Playlist = downloadedPlaylist.Playlist
+
+	return m3u8File
 }
 
 func DownloadLectureSlides(lecture Lecture) {
