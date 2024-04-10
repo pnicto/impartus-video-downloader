@@ -81,7 +81,7 @@ func main() {
 			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
 		),
 		mpb.AppendDecorators(decor.Percentage()),
-		mpb.BarPriority(math.MaxInt64-1),
+		mpb.BarPriority(math.MaxInt-1),
 	)
 
 	joiningBar := p.AddBar(int64(len(playlists)),
@@ -90,7 +90,7 @@ func main() {
 			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
 		),
 		mpb.AppendDecorators(decor.Percentage()),
-		mpb.BarPriority(math.MaxInt64),
+		mpb.BarPriority(math.MaxInt),
 	)
 
 	var joinWg sync.WaitGroup
