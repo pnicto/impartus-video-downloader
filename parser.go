@@ -19,7 +19,7 @@ type ParsedPlaylist struct {
 
 func PlaylistParser(scanner *bufio.Scanner, id int, title string, seqNo int) ParsedPlaylist {
 	var parsedOutput ParsedPlaylist
-	var isFirstView = true
+	isFirstView := true
 	var firstViewUrls []string
 	var secondViewUrls []string
 
