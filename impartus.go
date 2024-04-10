@@ -93,7 +93,46 @@ type (
 func LoginAndSetToken() {
 	log.Println("Attempt to login")
 
+	client := &http.Client{}
 	config := GetConfig()
+	file, err := os.Open(".token")
+	if err != nil {
+		log.Printf("Could not open token file %v\n", err)
+	}
+	if err == nil {
+		log.Println("Token file exists")
+		token, err := io.ReadAll(file)
+		if err != nil {
+			log.Printf("Could not read token from file %v\n", err)
+		}
+		if err == nil {
+			log.Println("Token read from file")
+			// check if the token is valid
+			url := fmt.Sprintf("%s/user/profile", config.BaseUrl)
+			req, err := http.NewRequest("GET", url, nil)
+			if err != nil {
+				log.Fatalf("Could not create request %v", err)
+			}
+			req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
+			req.Header.Add("Content-Type", "application/json;charset=UTF-8")
+			req.Header.Add("Accept", "application/json, text/plain, */*")
+			req.Header.Add("User-Agent", GetRandomUserAgent())
+
+			response, err := client.Do(req)
+			if err != nil {
+				log.Println("Error in checking token validity")
+			}
+			if err == nil {
+				defer response.Body.Close()
+				if response.StatusCode == http.StatusOK {
+					config.Token = string(token)
+					log.Printf("Token set from .token with length %d\n", len(config.Token))
+				}
+				return
+			}
+		}
+	}
+
 	url := fmt.Sprintf("%s/auth/signin", config.BaseUrl)
 
 	requestBody, err := json.Marshal(map[string]string{"username": config.Username, "password": config.Password})
@@ -101,7 +140,6 @@ func LoginAndSetToken() {
 		log.Fatalf("Could not marshal login body %v", err)
 	}
 
-	client := &http.Client{}
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.Fatalf("Could not create request %v", err)
@@ -141,6 +179,11 @@ func LoginAndSetToken() {
 
 	config.Token = loginResponse.Token
 	log.Printf("Token set with length %d\n", len(config.Token))
+	err = os.WriteFile(".token", bytes.NewBufferString(config.Token).Bytes(), 0644)
+	if err != nil {
+		log.Printf("Could not write token to file %v\n", err)
+	}
+	log.Println("Login successful")
 }
 
 func GetCourses() Courses {
