@@ -8,13 +8,13 @@ import (
 )
 
 type ParsedPlaylist struct {
-	HasMultipleViews bool
 	KeyURL           string
+	Title            string
 	FirstViewURLs    []string
 	SecondViewURLs   []string
 	Id               int
-	Title            string
 	SeqNo            int
+	HasMultipleViews bool
 }
 
 func PlaylistParser(scanner *bufio.Scanner, id int, title string, seqNo int) ParsedPlaylist {
