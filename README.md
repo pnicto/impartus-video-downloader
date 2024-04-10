@@ -35,6 +35,7 @@ The comments beside the fields tell the allowed values.
   "views": "both", // Accepted values: "left", "right", "both"
   "downloadLocation": "./downloads", // Directory where the final file is stored to
   "tempDirLocation": "./.temp", // Directory to store the chunks (directory can be deleted when the program is not running)
-  "slides": true // Accepted values: true, false to download the slides from impartus
+  "slides": false, // Accepted values: true, false to download the slides from impartus,
+  "numWorkers": 5, // Number of workers to use set this to 1 if you want to download the videos sequentially. Setting this to 0 will use a default number that is 5
 }
 ```
