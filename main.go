@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 func main() {
@@ -58,24 +59,53 @@ func main() {
 		}
 	}
 
-	downloadedPlaylists := DownloadPlaylist(GetPlaylist(chosenLectures))
-	metadataFiles := CreateTempM3U8Files(downloadedPlaylists)
+	playlists := GetPlaylist(chosenLectures)
 
-	for _, file := range metadataFiles {
-		var left, right string
-		if file.FirstViewFile != "" && config.Views != "left" {
-			left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", startLectureIndex+1, file.Playlist.Title))
-		}
-
-		if file.SecondViewFile != "" && config.Views != "right" {
-			right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", startLectureIndex+1, file.Playlist.Title))
-		}
-
-		if left != "" && right != "" && config.Views == "both" {
-			JoinViews(left, right, fmt.Sprintf("LEC %03d %s", startLectureIndex+1, file.Playlist.Title))
-		}
-		startLectureIndex++
+	err = os.MkdirAll(config.TempDirLocation, 0755)
+	if err != nil {
+		log.Fatalln("Could not create temp dir")
 	}
+
+	numWorkers := config.NumWorkers
+	playlistJobs := make(chan ParsedPlaylist, numWorkers)
+
+	var joinWg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		go func() {
+			for playlist := range playlistJobs {
+				fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
+				downloadedPlaylist := DownloadPlaylist(playlist)
+				metadataFile := CreateTempM3U8File(downloadedPlaylist)
+				fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
+
+				go func(file M3U8File) {
+					defer joinWg.Done()
+					fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
+					var left, right string
+					if file.FirstViewFile != "" && config.Views != "left" {
+						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+					}
+					if file.SecondViewFile != "" && config.Views != "right" {
+						right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+					}
+
+					if left != "" && right != "" && config.Views == "both" {
+						JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
+					}
+					fmt.Println("Joined chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
+				}(metadataFile)
+			}
+		}()
+	}
+
+	for _, playlist := range playlists {
+		fmt.Println("Adding playlist to job queue: ", playlist.Title, playlist.SeqNo)
+		joinWg.Add(1)
+		playlistJobs <- playlist
+	}
+
+	joinWg.Wait()
+	close(playlistJobs)
 
 	fmt.Print("\n\n")
 	fmt.Println("It is recommended that you use this tool as sparingly as possible. Heavy usage of this tool puts more strain on impartus server leading to potential IP bans, breakingAPI changes and possibly legal action.")
