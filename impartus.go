@@ -311,10 +311,10 @@ func downloadUrl(url string, id int, chunk int, view string) (string, error) {
 
 	outFilepath := filepath.Join(config.TempDirLocation, fmt.Sprintf("%d_%s_%04d.ts.temp", id, view, chunk))
 	outFile, err := os.Create(outFilepath)
-	defer outFile.Close()
 	if err != nil {
 		fmt.Printf("Could not download chunk %d %v", chunk, err)
 	}
+	defer outFile.Close()
 
 	_, err = io.Copy(outFile, resp.Body)
 	if err != nil {
@@ -391,11 +391,10 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 
 	if len(downloadedPlaylist.FirstViewChunks) > 0 {
 		firstView, err := os.Create(fmt.Sprintf("%s/%d_first.m3u8", config.TempDirLocation, downloadedPlaylist.Playlist.Id))
-		defer firstView.Close()
-
 		if err != nil {
 			fmt.Printf("Could not create temp m3u8 file for ttid %d with error %v", downloadedPlaylist.Playlist.Id, err)
 		}
+		defer firstView.Close()
 
 		firstView.WriteString(`#EXTM3U
 #EXT-X-VERSION:3
