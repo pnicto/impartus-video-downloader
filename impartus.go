@@ -15,7 +15,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/schollz/progressbar/v3"
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 type (
@@ -331,7 +332,7 @@ type DownloadedPlaylist struct {
 	Playlist         ParsedPlaylist
 }
 
-func DownloadPlaylist(playlist ParsedPlaylist) DownloadedPlaylist {
+func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlaylist {
 	config := GetConfig()
 	var downloadedPlaylist DownloadedPlaylist
 
@@ -346,32 +347,43 @@ func DownloadPlaylist(playlist ParsedPlaylist) DownloadedPlaylist {
 	decryptionKey := getDecryptionKey(keyUrlContent)
 
 	if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
-		bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading right view chunks", playlist.SeqNo)))
+		b := p.AddBar(int64(len(playlist.FirstViewURLs)),
+			mpb.PrependDecorators(
+				decor.Name(fmt.Sprintf("Downloading Lec %03d left view ", playlist.SeqNo)),
+			),
+			mpb.AppendDecorators(decor.Percentage()),
+		)
+
 		for i, url := range playlist.FirstViewURLs {
 			f, err := downloadUrl(url, playlist.Id, i, "first")
 			if err != nil {
-				fmt.Println()
-				fmt.Println("[WARNING] Chunk", i, "download failed")
+				// fmt.Println()
+				// fmt.Println("[WARNING] Chunk", i, "download failed")
 				continue
 			}
 			chunkPath := decryptChunk(f, decryptionKey)
 			downloadedPlaylist.FirstViewChunks = append(downloadedPlaylist.FirstViewChunks, chunkPath)
-			bar.Add(1)
+			b.Increment()
 		}
 	}
 
 	if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
-		bar := progressbar.NewOptions64(-1, progressbar.OptionSetDescription(fmt.Sprintf("Lec %03d downloading left view chunks", playlist.SeqNo)))
+		b := p.AddBar(int64(len(playlist.FirstViewURLs)),
+			mpb.PrependDecorators(
+				decor.Name(fmt.Sprintf("Downloading Lec %03d right view ", playlist.SeqNo)),
+			),
+			mpb.AppendDecorators(decor.Percentage()),
+		)
 		for i, url := range playlist.SecondViewURLs {
 			f, err := downloadUrl(url, playlist.Id, i, "second")
 			if err != nil {
-				fmt.Println()
-				fmt.Println("[WARNING] Chunk", i, "download failed")
+				// fmt.Println()
+				// fmt.Println("[WARNING] Chunk", i, "download failed")
 				continue
 			}
 			chunkPath := decryptChunk(f, decryptionKey)
 			downloadedPlaylist.SecondViewChunks = append(downloadedPlaylist.SecondViewChunks, chunkPath)
-			bar.Add(1)
+			b.Increment()
 		}
 	}
 

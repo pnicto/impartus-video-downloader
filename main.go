@@ -3,11 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"sync"
+
+	"github.com/vbauerster/mpb/v8"
+	"github.com/vbauerster/mpb/v8/decor"
 )
 
 func main() {
@@ -69,18 +73,40 @@ func main() {
 	numWorkers := config.NumWorkers
 	playlistJobs := make(chan ParsedPlaylist, numWorkers)
 
+	p := mpb.New()
+
+	downloadBar := p.AddBar(int64(len(playlists)),
+		mpb.PrependDecorators(
+			decor.Name("Downloaded "),
+			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
+		),
+		mpb.AppendDecorators(decor.Percentage()),
+		mpb.BarPriority(math.MaxInt64-1),
+	)
+
+	joiningBar := p.AddBar(int64(len(playlists)),
+		mpb.PrependDecorators(
+			decor.Name("Joined "),
+			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
+		),
+		mpb.AppendDecorators(decor.Percentage()),
+		mpb.BarPriority(math.MaxInt64),
+	)
+
 	var joinWg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
 		go func() {
 			for playlist := range playlistJobs {
-				fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
-				downloadedPlaylist := DownloadPlaylist(playlist)
+				// fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
+				downloadedPlaylist := DownloadPlaylist(playlist, p)
 				metadataFile := CreateTempM3U8File(downloadedPlaylist)
-				fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
+				downloadBar.Increment()
+				// fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
 
 				go func(file M3U8File) {
+					defer joiningBar.Increment()
 					defer joinWg.Done()
-					fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
+					// fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 					var left, right string
 					if file.FirstViewFile != "" && config.Views != "left" {
 						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
@@ -92,19 +118,20 @@ func main() {
 					if left != "" && right != "" && config.Views == "both" {
 						JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
 					}
-					fmt.Println("Joined chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
+					// fmt.Println("Joined chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 				}(metadataFile)
 			}
 		}()
 	}
 
 	for _, playlist := range playlists {
-		fmt.Println("Adding playlist to job queue: ", playlist.Title, playlist.SeqNo)
+		// fmt.Println("Adding playlist to job queue: ", playlist.Title, playlist.SeqNo)
 		joinWg.Add(1)
 		playlistJobs <- playlist
 	}
 
 	joinWg.Wait()
+	p.Wait()
 	close(playlistJobs)
 
 	fmt.Print("\n\n")
