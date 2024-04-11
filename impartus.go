@@ -412,7 +412,7 @@ func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlayli
 	}
 
 	if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
-		b := p.AddBar(int64(len(playlist.FirstViewURLs)),
+		b := p.AddBar(int64(len(playlist.SecondViewURLs)),
 			mpb.PrependDecorators(
 				decor.Name(fmt.Sprintf("Downloading Lec %03d right view ", playlist.SeqNo), decor.WCSyncWidth),
 				decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
