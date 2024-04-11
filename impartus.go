@@ -392,9 +392,10 @@ func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlayli
 	if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
 		b := p.AddBar(int64(len(playlist.FirstViewURLs)),
 			mpb.PrependDecorators(
-				decor.Name(fmt.Sprintf("Downloading Lec %03d left view ", playlist.SeqNo)),
+				decor.Name(fmt.Sprintf("Downloading Lec %03d left view ", playlist.SeqNo), decor.WCSyncWidth),
+				decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
 			),
-			mpb.AppendDecorators(decor.Percentage()),
+			mpb.AppendDecorators(decor.Percentage(decor.WCSyncWidth)),
 		)
 
 		for i, url := range playlist.FirstViewURLs {
@@ -413,9 +414,10 @@ func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlayli
 	if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
 		b := p.AddBar(int64(len(playlist.FirstViewURLs)),
 			mpb.PrependDecorators(
-				decor.Name(fmt.Sprintf("Downloading Lec %03d right view ", playlist.SeqNo)),
+				decor.Name(fmt.Sprintf("Downloading Lec %03d right view ", playlist.SeqNo), decor.WCSyncWidth),
+				decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
 			),
-			mpb.AppendDecorators(decor.Percentage()),
+			mpb.AppendDecorators(decor.Percentage(decor.WCSyncWidth)),
 		)
 		for i, url := range playlist.SecondViewURLs {
 			f, err := downloadUrl(url, playlist.Id, i, "second")

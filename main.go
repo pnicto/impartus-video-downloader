@@ -69,27 +69,28 @@ func main() {
 	if err != nil {
 		log.Fatalln("Could not create temp dir")
 	}
+	fmt.Println()
 
 	numWorkers := config.NumWorkers
 	playlistJobs := make(chan ParsedPlaylist, numWorkers)
 
-	p := mpb.New()
+	p := mpb.New(mpb.WithWidth(70))
 
 	downloadBar := p.AddBar(int64(len(playlists)),
 		mpb.PrependDecorators(
-			decor.Name("Downloaded "),
+			decor.Name("Downloaded ", decor.WCSyncWidth),
 			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
 		),
-		mpb.AppendDecorators(decor.Percentage()),
+		mpb.AppendDecorators(decor.Percentage(decor.WCSyncWidth)),
 		mpb.BarPriority(math.MaxInt-1),
 	)
 
 	joiningBar := p.AddBar(int64(len(playlists)),
 		mpb.PrependDecorators(
-			decor.Name("Joined "),
+			decor.Name("Joined ", decor.WCSyncWidth),
 			decor.CountersNoUnit("%d / %d", decor.WCSyncWidth),
 		),
-		mpb.AppendDecorators(decor.Percentage()),
+		mpb.AppendDecorators(decor.Percentage(decor.WCSyncWidth)),
 		mpb.BarPriority(math.MaxInt),
 	)
 
