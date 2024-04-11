@@ -389,7 +389,7 @@ func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlayli
 
 	decryptionKey := getDecryptionKey(keyUrlContent)
 
-	if len(playlist.FirstViewURLs) > 0 && config.Views != "left" {
+	if len(playlist.FirstViewURLs) > 0 && config.Views != "right" {
 		b := p.AddBar(int64(len(playlist.FirstViewURLs)),
 			mpb.PrependDecorators(
 				decor.Name(fmt.Sprintf("Downloading Lec %03d left view ", playlist.SeqNo), decor.WCSyncWidth),
@@ -411,7 +411,7 @@ func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlayli
 		}
 	}
 
-	if len(playlist.SecondViewURLs) > 0 && config.Views != "right" {
+	if len(playlist.SecondViewURLs) > 0 && config.Views != "left" {
 		b := p.AddBar(int64(len(playlist.SecondViewURLs)),
 			mpb.PrependDecorators(
 				decor.Name(fmt.Sprintf("Downloading Lec %03d right view ", playlist.SeqNo), decor.WCSyncWidth),

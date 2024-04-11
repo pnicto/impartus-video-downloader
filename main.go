@@ -109,11 +109,11 @@ func main() {
 					defer joinWg.Done()
 					// fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 					var left, right string
-					if file.FirstViewFile != "" && config.Views != "left" {
-						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+					if file.FirstViewFile != "" && config.Views != "right" {
+						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 					}
-					if file.SecondViewFile != "" && config.Views != "right" {
-						right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
+					if file.SecondViewFile != "" && config.Views != "left" {
+						right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 					}
 
 					if left != "" && right != "" && config.Views == "both" {
