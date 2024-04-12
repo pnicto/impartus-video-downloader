@@ -1,13 +1,18 @@
 # impartus video downloader
 
 -   [impartus video downloader](#impartus-video-downloader)
+    -   [Demo](#demo)
     -   [How to use](#how-to-use)
         -   [Selecting lectures](#selecting-lectures)
     -   [Configuration](#configuration)
 
+## Demo
+
+![Demo](./assets/demo.gif)
+
 ## How to use
 
--   Have ffmpeg installed on your pc and have it in your PATH.
+-   Have [ffmpeg](https://ffmpeg.org/download.html) installed on your pc and have it in your **PATH**.
 -   [Download](https://github.com/pnicto/impartus-video-downloader/releases/latest) the latest release and extract it.
 -   Add your username/email and password in `config.json`.
 -   Make suitable changes to the config as per your needs. Read [here](#configuration) for more information on configuration.

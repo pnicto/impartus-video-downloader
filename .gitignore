@@ -25,6 +25,7 @@
 
 !sample.config.json
 !fixtures/**
+!assets/**
 
 # !Makefile
 # ...even if they are in subdirectories
