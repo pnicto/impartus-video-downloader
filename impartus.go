@@ -127,8 +127,10 @@ func LoginAndSetToken() {
 				if response.StatusCode == http.StatusOK {
 					config.Token = string(token)
 					log.Printf("Token set from .token with length %d\n", len(config.Token))
+					return
+				} else {
+					log.Println("Token is invalid")
 				}
-				return
 			}
 		}
 	}
