@@ -5,6 +5,12 @@
     -   [How to use](#how-to-use)
         -   [Selecting lectures](#selecting-lectures)
     -   [Configuration](#configuration)
+    -   [FAQ/Troubleshooting](#faqtroubleshooting)
+        -   [How do I run this?](#how-do-i-run-this)
+        -   [IT IS NOT WORKING!!!!](#it-is-not-working)
+        -   [I changed the credentials but it is not giving me data for the new credentials](#i-changed-the-credentials-but-it-is-not-giving-me-data-for-the-new-credentials)
+        -   [Does it download both the views?](#does-it-download-both-the-views)
+        -   [How do I change to different views in \[insert software name\]?](#how-do-i-change-to-different-views-in-insert-software-name)
 
 ## Demo
 
@@ -44,3 +50,31 @@ The comments beside the fields tell the allowed values.
     "numWorkers": 5 // Number of workers to use set this to 1 if you want to download the videos sequentially. Setting this to 0 will use a default number that is 5
 }
 ```
+
+## FAQ/Troubleshooting
+
+### How do I run this?
+
+Refer to the [How to use](#how-to-use) section.
+
+### IT IS NOT WORKING!!!!
+
+-   Make sure you have the latest version.
+-   Make sure you have the correct username and password.
+-   Make sure you have the correct baseUrl.
+-   Make sure you have ffmpeg installed and in your PATH.
+-   Make sure the website is working.
+
+Despite all of them being correct if it is not working, open an issue.
+
+### I changed the credentials but it is not giving me data for the new credentials
+
+Delete the `.token` file. This was a mistake on my part. The program caches the token and does not check for new credentials. This may or may not be fixed in the future.
+
+### Does it download both the views?
+
+Yes. It downloaded both the views if they are available and are selected in the `config.json`.
+
+### How do I change to different views in [insert software name]?
+
+You are on your own here. I use `mpv` and it has a shortcut key https://github.com/mpv-player/mpv/issues/8065 for the same. For `VLC` the functionality is available from my understanding in some menu. For other software, you will have to look it up.
