@@ -1,8 +1,5 @@
 # impartus video downloader
 
-> [!NOTE]
-> Impartus has stopped working working at least for 2021 Batch. Make sure to check if it is working before using this tool.
-
 -   [impartus video downloader](#impartus-video-downloader)
     -   [Demo](#demo)
     -   [How to use](#how-to-use)
