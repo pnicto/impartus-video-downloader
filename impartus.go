@@ -206,6 +206,9 @@ func GetCourses() Courses {
 	log.Printf("Fetched %d courses\n", len(courses))
 	log.Println(courses)
 
+	for i := range courses {
+		courses[i].SubjectName = sanitiseFileName(courses[i].SubjectName)
+	}
 	return courses
 }
 
@@ -226,6 +229,11 @@ func GetLectures(course Course) Lectures {
 
 	log.Printf("Fetched %d lectures\n", len(lectures))
 	log.Println(lectures)
+
+	for i := range lectures {
+		lectures[i].Topic = sanitiseFileName(lectures[i].Topic)
+		lectures[i].SubjectName = sanitiseFileName(lectures[i].SubjectName)
+	}
 
 	return lectures
 }

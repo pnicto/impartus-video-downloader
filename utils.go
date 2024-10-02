@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -15,10 +16,6 @@ func CreateDirInsideDownloads(dirName string) string {
 	if err != nil {
 		log.Fatalf("Could not create downloads directory %s with err %v\n", config.DownloadLocation, err)
 	}
-
-	// Remove slashes from course name
-	dirName = strings.ReplaceAll(dirName, "/", "_")
-	dirName = strings.ReplaceAll(dirName, "\\", "_")
 
 	dirPath := filepath.Join(config.DownloadLocation, dirName)
 	err = os.MkdirAll(dirPath, 0755)
@@ -42,4 +39,14 @@ func removeEmptyLectures(lectures Lectures) Lectures {
 		}
 	}
 	return filteredLectures
+}
+
+func sanitiseFileName(name string) string {
+	re := regexp.MustCompile(`[<>:"/\\|?*\n\r]`)
+	log.Printf("Sanitising %q\n", name)
+	name = re.ReplaceAllString(name, "_")
+	name = strings.TrimSpace(name)
+	name = strings.Trim(name, ".")
+	log.Printf("Sanitised to %q\n", name)
+	return name
 }

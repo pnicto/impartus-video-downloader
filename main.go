@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/vbauerster/mpb/v8"
@@ -50,8 +49,7 @@ func main() {
 			log.Fatalf("Could not create slides directory with err %v\n", err)
 		}
 		dirName := courses[courseIndex].SubjectName
-		dirName = strings.ReplaceAll(dirName, "/", "_")
-		dirName = strings.ReplaceAll(dirName, "\\", "_")
+		dirName = sanitiseFileName(dirName)
 		dirPath := filepath.Join("./slides", dirName)
 		err = os.MkdirAll(dirPath, 0755)
 		if err != nil {
