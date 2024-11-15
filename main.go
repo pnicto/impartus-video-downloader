@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"math"
@@ -13,7 +14,21 @@ import (
 	"github.com/vbauerster/mpb/v8/decor"
 )
 
+var (
+	version = "dev"
+	date    = ""
+)
+
 func main() {
+	showVersion := flag.Bool("version", false, "Show version")
+	flag.BoolVar(showVersion, "v", false, "Show version")
+	flag.Parse()
+
+	if *showVersion {
+		fmt.Printf("Impartus Video Downloader\nVersion: %s\nBuild Date: %s\n", version, date)
+		os.Exit(0)
+	}
+
 	_, err := exec.LookPath("ffmpeg")
 	if err != nil {
 		log.Fatalln("Please add ffmpeg to your path")
