@@ -34,7 +34,7 @@ func ChooseCourse(courses Courses) int {
 	log.Printf("User chose %d\n", choice)
 	log.Printf("Index is %d\n", choice-1)
 
-	CreateDirInsideDownloads(fmt.Sprintf("%s %s", courses[choice-1].SubjectName, courses[choice-1].SessionName))
+	CreateDirInsideDownloads(fmt.Sprintf("%s %s %s", courses[choice-1].SubjectName, courses[choice-1].ProfessorName, courses[choice-1].SessionName))
 
 	return choice - 1
 }
