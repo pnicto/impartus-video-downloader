@@ -56,7 +56,7 @@ func ChooseLectures(lectures Lectures) (int, int, bool) {
 	}
 	fmt.Println()
 
-	fmt.Println("Enter a range (e.g., 1 5 for lectures 1 through 5):")
+	fmt.Println("Enter a range (e.g., 1 5 for lectures 1,2,3,4,5):")
 
 	for {
 		_, err := fmt.Scanf("%d %d\n", &startIndex, &endIndex)

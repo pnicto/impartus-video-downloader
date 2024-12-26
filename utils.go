@@ -11,7 +11,7 @@ import (
 func CreateDirInsideDownloads(dirName string) string {
 	log.Printf("Creating downloads directory for %s\n", dirName)
 
-	config := GetConfig()
+	config := GetConfig()// in config.go
 	err := os.MkdirAll(config.DownloadLocation, 0755)
 	if err != nil {
 		log.Fatalf("Could not create downloads directory %s with err %v\n", config.DownloadLocation, err)
