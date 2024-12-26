@@ -94,7 +94,7 @@ func LoginAndSetToken() {
 	log.Println("Attempt to login")
 
 	client := &http.Client{}
-	config := GetConfig()
+	config := GetConfig() // in config.go
 	file, err := os.Open(".token")
 	if err != nil {
 		log.Printf("Could not open token file %v\n", err)
@@ -192,10 +192,10 @@ func GetCourses() Courses {
 	log.Println("Getting courses")
 
 	var courses Courses
-	config := GetConfig()
+	config := GetConfig() // in config.go
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
-	resp, _ := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&courses)
@@ -207,7 +207,7 @@ func GetCourses() Courses {
 	log.Println(courses)
 
 	for i := range courses {
-		courses[i].SubjectName = sanitiseFileName(courses[i].SubjectName)
+		courses[i].SubjectName = sanitiseFileName(courses[i].SubjectName)// in utils.go
 	}
 	return courses
 }
@@ -216,10 +216,10 @@ func GetLectures(course Course) Lectures {
 	log.Println("Getting lectures")
 
 	var lectures Lectures
-	config := GetConfig()
+	config := GetConfig()// in config.go
 
 	url := fmt.Sprintf("%s/subjects/%d/lectures/%d", config.BaseUrl, course.SubjectID, course.SessionID)
-	resp, _ := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&lectures)
@@ -231,8 +231,8 @@ func GetLectures(course Course) Lectures {
 	log.Println(lectures)
 
 	for i := range lectures {
-		lectures[i].Topic = sanitiseFileName(lectures[i].Topic)
-		lectures[i].SubjectName = sanitiseFileName(lectures[i].SubjectName)
+		lectures[i].Topic = sanitiseFileName(lectures[i].Topic)// in utils.go
+		lectures[i].SubjectName = sanitiseFileName(lectures[i].SubjectName)// in utils.go
 	}
 
 	return lectures
@@ -338,14 +338,14 @@ func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
 	for _, lecture := range lectures {
 		streamInfos := getStreamInfos(lecture)
 		streamUrl := getStreamUrl(streamInfos)
-		resp, err := GetClientAuthorized(streamUrl, GetConfig().Token)
+		resp, err := GetClientAuthorized(streamUrl, GetConfig().Token)// in http.go
 		if err != nil {
 			fmt.Println("Could not get stream url", err)
 			continue
 		}
 		defer resp.Body.Close()
 		scanner := bufio.NewScanner(resp.Body)
-		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic, lecture.SeqNo))
+		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic, lecture.SeqNo))// in parser.go
 	}
 
 	return parsedPlaylists
@@ -386,10 +386,10 @@ type DownloadedPlaylist struct {
 }
 
 func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlaylist {
-	config := GetConfig()
+	config := GetConfig()// in config.go
 	var downloadedPlaylist DownloadedPlaylist
 
-	resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)
+	resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)// in http.go
 	defer resp.Body.Close()
 	keyUrlContent, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -453,7 +453,7 @@ type M3U8File struct {
 }
 
 func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
-	config := GetConfig()
+	config := GetConfig()// in config.go
 	var m3u8File M3U8File
 
 	if len(downloadedPlaylist.FirstViewChunks) > 0 {
@@ -464,11 +464,11 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 		defer firstView.Close()
 
 		firstView.WriteString(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-MEDIA-SEQUENCE:0
-#EXT-X-ALLOW-CACHE:YES
-#EXT-X-TARGETDURATION:11
-#EXT-X-KEY:METHOD=NONE`)
+						       #EXT-X-VERSION:3
+							   #EXT-X-MEDIA-SEQUENCE:0
+							   #EXT-X-ALLOW-CACHE:YES
+							   #EXT-X-TARGETDURATION:11
+							   #EXT-X-KEY:METHOD=NONE`)
 
 		for _, chunk := range downloadedPlaylist.FirstViewChunks {
 			firstView.WriteString("#EXTINF:1\n")
@@ -488,11 +488,11 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 		defer secondView.Close()
 
 		secondView.WriteString(`#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-MEDIA-SEQUENCE:0
-#EXT-X-ALLOW-CACHE:YES
-#EXT-X-TARGETDURATION:11
-#EXT-X-KEY:METHOD=NONE`)
+								#EXT-X-VERSION:3
+								#EXT-X-MEDIA-SEQUENCE:0
+								#EXT-X-ALLOW-CACHE:YES
+								#EXT-X-TARGETDURATION:11
+								#EXT-X-KEY:METHOD=NONE`)
 
 		for _, chunk := range downloadedPlaylist.SecondViewChunks {
 			secondView.WriteString("#EXTINF:1\n")
@@ -510,14 +510,16 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 }
 
 func DownloadLectureSlides(lecture Lecture) {
-	config := GetConfig()
-	path := fmt.Sprintf("./slides/%s/L%03d %s.pdf", lecture.SubjectName, lecture.SeqNo, lecture.Topic)
+	config := GetConfig()// in config.go
+	dirPath := config.DownloadLocation
+	slideName := fmt.Sprintf("/LEC %03d %s.pdf", lecture.SeqNo, lecture.Topic)
+	path := filepath.Join(dirPath, slideName)
 	f, err := os.Create(path)
 	if err != nil {
 		fmt.Println("Could not create file", path, "with error", err)
 	}
 	url := fmt.Sprintf("%s/videos/%d/auto-generated-pdf", config.BaseUrl, lecture.VideoID)
-	resp, _ := GetClientAuthorized(url, config.Token)
+	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
 	defer resp.Body.Close()
 	num, _ := io.Copy(f, resp.Body)
 	fmt.Printf("Downloaded %d bytes\n", num)
