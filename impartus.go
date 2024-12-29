@@ -94,7 +94,7 @@ func LoginAndSetToken() {
 	log.Println("Attempt to login")
 
 	client := &http.Client{}
-	config := GetConfig() // in config.go
+	config := GetConfig()
 	file, err := os.Open(".token")
 	if err != nil {
 		log.Printf("Could not open token file %v\n", err)
@@ -192,7 +192,7 @@ func GetCourses() Courses {
 	log.Println("Getting courses")
 
 	var courses Courses
-	config := GetConfig() // in config.go
+	config := GetConfig() 
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
 	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
@@ -219,7 +219,7 @@ func GetLectures(course Course) Lectures {
 	config := GetConfig()// in config.go
 
 	url := fmt.Sprintf("%s/subjects/%d/lectures/%d", config.BaseUrl, course.SubjectID, course.SessionID)
-	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
+	resp, _ := GetClientAuthorized(url, config.Token)/
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&lectures)
@@ -510,7 +510,7 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 }
 
 func DownloadLectureSlides(lecture Lecture) {
-	config := GetConfig()// in config.go
+	config := GetConfig()
 	dirPath := config.DownloadLocation
 	slideName := fmt.Sprintf("/LEC %03d %s.pdf", lecture.SeqNo, lecture.Topic)
 	path := filepath.Join(dirPath, slideName)
