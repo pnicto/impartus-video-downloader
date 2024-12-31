@@ -30,7 +30,7 @@ func JoinViews(leftFile, rightFile, name string) {
 }
 
 func JoinChunksFromM3U8(f string, title string) string {
-	config := GetConfig()// in config.go
+	config := GetConfig()
 	outfile := filepath.Join(config.DownloadLocation, title)
 
 	cmd := exec.Command("ffmpeg", "-y", "-hide_banner", "-i", f, "-c", "copy", outfile)

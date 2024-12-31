@@ -46,28 +46,28 @@ func main() {
 	fmt.Println("If you are facing any issues, please check the section at https://github.com/pnicto/impartus-video-downloader#faqtroubleshooting")
 	fmt.Print("\n\n")
 
-	LoginAndSetToken()// in impartus.go
-	courses := GetCourses()// in impartus.go
+	LoginAndSetToken()
+	courses := GetCourses()
 
-	courseIndex := ChooseCourse(courses)// in ui.go
-	lectures := GetLectures(courses[courseIndex])// in impartus.go
+	courseIndex := ChooseCourse(courses)
+	lectures := GetLectures(courses[courseIndex])
 
-	startLectureIndex, endLectureIndex, skipEmptyLectures := ChooseLectures(lectures)// in ui.go
+	startLectureIndex, endLectureIndex, skipEmptyLectures := ChooseLectures(lectures)
 	var chosenLectures Lectures
 	if skipEmptyLectures {
-		chosenLectures = removeEmptyLectures(lectures[startLectureIndex : endLectureIndex+1])// in utils.go
+		chosenLectures = removeEmptyLectures(lectures[startLectureIndex : endLectureIndex+1])
 	} else {
 		chosenLectures = lectures[startLectureIndex : endLectureIndex+1]
 	}
 
-	config := GetConfig()// in config.go
+	config := GetConfig()
 	if config.Slides {
 		for _, lecture := range chosenLectures {
-			DownloadLectureSlides(lecture)// in impartus.go
+			DownloadLectureSlides(lecture)
 		}
 	}
 
-	playlists := GetPlaylist(chosenLectures)// in impartus.go
+	playlists := GetPlaylist(chosenLectures)
 
 	err = os.MkdirAll(config.TempDirLocation, 0755)
 	if err != nil {
@@ -103,8 +103,8 @@ func main() {
 		go func() {
 			for playlist := range playlistJobs {
 				// fmt.Println("Downloading playlist: ", playlist.Title, playlist.SeqNo)
-				downloadedPlaylist := DownloadPlaylist(playlist, p)// in impartus.go
-				metadataFile := CreateTempM3U8File(downloadedPlaylist)// in impartus.go
+				downloadedPlaylist := DownloadPlaylist(playlist, p)
+				metadataFile := CreateTempM3U8File(downloadedPlaylist)
 				downloadBar.Increment()
 				// fmt.Println("Downloaded playlist: ", playlist.Title, playlist.SeqNo)
 
@@ -114,14 +114,14 @@ func main() {
 					// fmt.Println("Joining chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 					var left, right string
 					if file.FirstViewFile != "" && config.Views != "right" {
-						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))// in ffmpeg.go
+						left = JoinChunksFromM3U8(file.FirstViewFile, fmt.Sprintf("LEC %03d %s LEFT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 					}
 					if file.SecondViewFile != "" && config.Views != "left" {
-						right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))// in ffmpeg.go
+						right = JoinChunksFromM3U8(file.SecondViewFile, fmt.Sprintf("LEC %03d %s RIGHT VIEW.mp4", file.Playlist.SeqNo, file.Playlist.Title))
 					}
 
 					if left != "" && right != "" && config.Views == "both" {
-						JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))// in ffmpeg.go
+						JoinViews(left, right, fmt.Sprintf("LEC %03d %s", file.Playlist.SeqNo, file.Playlist.Title))
 					}
 					// fmt.Println("Joined chunks for: ", file.Playlist.Title, file.Playlist.SeqNo)
 				}(metadataFile)

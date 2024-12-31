@@ -195,7 +195,7 @@ func GetCourses() Courses {
 	config := GetConfig() 
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
-	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&courses)
@@ -207,7 +207,7 @@ func GetCourses() Courses {
 	log.Println(courses)
 
 	for i := range courses {
-		courses[i].SubjectName = sanitiseFileName(courses[i].SubjectName)// in utils.go
+		courses[i].SubjectName = sanitiseFileName(courses[i].SubjectName)
 	}
 	return courses
 }
@@ -216,7 +216,7 @@ func GetLectures(course Course) Lectures {
 	log.Println("Getting lectures")
 
 	var lectures Lectures
-	config := GetConfig()// in config.go
+	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects/%d/lectures/%d", config.BaseUrl, course.SubjectID, course.SessionID)
 	resp, _ := GetClientAuthorized(url, config.Token)/
@@ -231,8 +231,8 @@ func GetLectures(course Course) Lectures {
 	log.Println(lectures)
 
 	for i := range lectures {
-		lectures[i].Topic = sanitiseFileName(lectures[i].Topic)// in utils.go
-		lectures[i].SubjectName = sanitiseFileName(lectures[i].SubjectName)// in utils.go
+		lectures[i].Topic = sanitiseFileName(lectures[i].Topic)
+		lectures[i].SubjectName = sanitiseFileName(lectures[i].SubjectName)
 	}
 
 	return lectures
@@ -338,14 +338,14 @@ func GetPlaylist(lectures []Lecture) []ParsedPlaylist {
 	for _, lecture := range lectures {
 		streamInfos := getStreamInfos(lecture)
 		streamUrl := getStreamUrl(streamInfos)
-		resp, err := GetClientAuthorized(streamUrl, GetConfig().Token)// in http.go
+		resp, err := GetClientAuthorized(streamUrl, GetConfig().Token)
 		if err != nil {
 			fmt.Println("Could not get stream url", err)
 			continue
 		}
 		defer resp.Body.Close()
 		scanner := bufio.NewScanner(resp.Body)
-		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic, lecture.SeqNo))// in parser.go
+		parsedPlaylists = append(parsedPlaylists, PlaylistParser(scanner, lecture.Ttid, lecture.Topic, lecture.SeqNo))
 	}
 
 	return parsedPlaylists
@@ -386,10 +386,10 @@ type DownloadedPlaylist struct {
 }
 
 func DownloadPlaylist(playlist ParsedPlaylist, p *mpb.Progress) DownloadedPlaylist {
-	config := GetConfig()// in config.go
+	config := GetConfig()
 	var downloadedPlaylist DownloadedPlaylist
 
-	resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)// in http.go
+	resp, _ := GetClientAuthorized(playlist.KeyURL, config.Token)
 	defer resp.Body.Close()
 	keyUrlContent, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -453,7 +453,7 @@ type M3U8File struct {
 }
 
 func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
-	config := GetConfig()// in config.go
+	config := GetConfig()
 	var m3u8File M3U8File
 
 	if len(downloadedPlaylist.FirstViewChunks) > 0 {
@@ -519,7 +519,7 @@ func DownloadLectureSlides(lecture Lecture) {
 		fmt.Println("Could not create file", path, "with error", err)
 	}
 	url := fmt.Sprintf("%s/videos/%d/auto-generated-pdf", config.BaseUrl, lecture.VideoID)
-	resp, _ := GetClientAuthorized(url, config.Token)// in http.go
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 	num, _ := io.Copy(f, resp.Body)
 	fmt.Printf("Downloaded %d bytes\n", num)
