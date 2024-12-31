@@ -1,16 +1,18 @@
 # impartus video downloader
 
--   [impartus video downloader](#impartus-video-downloader)
-    -   [Demo](#demo)
-    -   [How to use](#how-to-use)
-        -   [Selecting lectures](#selecting-lectures)
-    -   [Configuration](#configuration)
-    -   [FAQ/Troubleshooting](#faqtroubleshooting)
-        -   [How do I run this?](#how-do-i-run-this)
-        -   [IT IS NOT WORKING!!!!](#it-is-not-working)
-        -   [I changed the credentials but it is not giving me data for the new credentials](#i-changed-the-credentials-but-it-is-not-giving-me-data-for-the-new-credentials)
-        -   [Does it download both the views?](#does-it-download-both-the-views)
-        -   [How do I change to different views in \[insert software name\]?](#how-do-i-change-to-different-views-in-insert-software-name)
+- [impartus video downloader](#impartus-video-downloader)
+  - [Demo](#demo)
+  - [How to use](#how-to-use)
+    - [Selecting lectures](#selecting-lectures)
+  - [Configuration](#configuration)
+  - [FAQ/Troubleshooting](#faqtroubleshooting)
+    - [How do I run this?](#how-do-i-run-this)
+    - [IT IS NOT WORKING!!!!](#it-is-not-working)
+    - [I changed the credentials but it is not giving me data for the new credentials](#i-changed-the-credentials-but-it-is-not-giving-me-data-for-the-new-credentials)
+    - [Does it download both the views?](#does-it-download-both-the-views)
+    - [How do I change to different views in \[insert software name\]?](#how-do-i-change-to-different-views-in-insert-software-name)
+    - [How to download slides?](#how-to-download-slides)
+    - [Where are my slides???](#where-are-my-slides)
 
 ## Demo
 
@@ -78,3 +80,11 @@ Yes. It downloaded both the views if they are available and are selected in the 
 ### How do I change to different views in [insert software name]?
 
 You are on your own here. I use `mpv` and it has a shortcut key https://github.com/mpv-player/mpv/issues/8065 for the same. For `VLC` the functionality is available from my understanding in some menu. For other software, you will have to look it up.
+
+### How to download slides?
+
+Set `slides` value to `true` in `config.json`.
+
+### Where are my slides???
+
+The slides are located in the same folder as the videos.
