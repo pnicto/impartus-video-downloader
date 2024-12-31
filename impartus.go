@@ -219,7 +219,7 @@ func GetLectures(course Course) Lectures {
 	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects/%d/lectures/%d", config.BaseUrl, course.SubjectID, course.SessionID)
-	resp, _ := GetClientAuthorized(url, config.Token)/
+	resp, _ := GetClientAuthorized(url, config.Token)
 	defer resp.Body.Close()
 
 	err := json.NewDecoder(resp.Body).Decode(&lectures)
