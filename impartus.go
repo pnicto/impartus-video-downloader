@@ -192,7 +192,7 @@ func GetCourses() Courses {
 	log.Println("Getting courses")
 
 	var courses Courses
-	config := GetConfig() 
+	config := GetConfig()
 
 	url := fmt.Sprintf("%s/subjects", config.BaseUrl)
 	resp, _ := GetClientAuthorized(url, config.Token)
