@@ -511,7 +511,9 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 
 func DownloadLectureSlides(lecture Lecture) {
 	config := GetConfig()
-	path := fmt.Sprintf("./slides/%s/L%03d %s.pdf", lecture.SubjectName, lecture.SeqNo, lecture.Topic)
+	dirPath := config.DownloadLocation
+	slideName := fmt.Sprintf("/LEC %03d %s.pdf", lecture.SeqNo, lecture.Topic)
+	path := filepath.Join(dirPath, slideName)
 	f, err := os.Create(path)
 	if err != nil {
 		fmt.Println("Could not create file", path, "with error", err)

@@ -7,7 +7,6 @@ import (
 	"math"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"sync"
 
 	"github.com/vbauerster/mpb/v8"
@@ -63,18 +62,6 @@ func main() {
 
 	config := GetConfig()
 	if config.Slides {
-		err := os.MkdirAll("./slides", 0755)
-		if err != nil {
-			log.Fatalf("Could not create slides directory with err %v\n", err)
-		}
-		dirName := courses[courseIndex].SubjectName
-		dirName = sanitiseFileName(dirName)
-		dirPath := filepath.Join("./slides", dirName)
-		err = os.MkdirAll(dirPath, 0755)
-		if err != nil {
-			log.Fatalf("Could not create directory %s with err %v\n", dirPath, err)
-		}
-
 		for _, lecture := range chosenLectures {
 			DownloadLectureSlides(lecture)
 		}

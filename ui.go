@@ -34,7 +34,7 @@ func ChooseCourse(courses Courses) int {
 	log.Printf("User chose %d\n", choice)
 	log.Printf("Index is %d\n", choice-1)
 
-	CreateDirInsideDownloads(fmt.Sprintf("%s %s", courses[choice-1].SubjectName, courses[choice-1].SessionName))
+	CreateDirInsideDownloads(fmt.Sprintf("%s %s %s", courses[choice-1].SubjectName, courses[choice-1].ProfessorName, courses[choice-1].SessionName))
 
 	return choice - 1
 }
@@ -56,7 +56,7 @@ func ChooseLectures(lectures Lectures) (int, int, bool) {
 	}
 	fmt.Println()
 
-	fmt.Println("Enter a range (e.g., 1 5 for lectures 1 through 5):")
+	fmt.Println("Enter a range (e.g., 1 5 for lectures 1,2,3,4,5):")
 
 	for {
 		_, err := fmt.Scanf("%d %d\n", &startIndex, &endIndex)
