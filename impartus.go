@@ -464,11 +464,11 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 		defer firstView.Close()
 
 		firstView.WriteString(`#EXTM3U
-						       #EXT-X-VERSION:3
-							   #EXT-X-MEDIA-SEQUENCE:0
-							   #EXT-X-ALLOW-CACHE:YES
-							   #EXT-X-TARGETDURATION:11
-							   #EXT-X-KEY:METHOD=NONE`)
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
 
 		for _, chunk := range downloadedPlaylist.FirstViewChunks {
 			firstView.WriteString("#EXTINF:1\n")
@@ -488,11 +488,11 @@ func CreateTempM3U8File(downloadedPlaylist DownloadedPlaylist) M3U8File {
 		defer secondView.Close()
 
 		secondView.WriteString(`#EXTM3U
-								#EXT-X-VERSION:3
-								#EXT-X-MEDIA-SEQUENCE:0
-								#EXT-X-ALLOW-CACHE:YES
-								#EXT-X-TARGETDURATION:11
-								#EXT-X-KEY:METHOD=NONE`)
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:0
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:11
+#EXT-X-KEY:METHOD=NONE`)
 
 		for _, chunk := range downloadedPlaylist.SecondViewChunks {
 			secondView.WriteString("#EXTINF:1\n")
