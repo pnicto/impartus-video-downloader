@@ -3,6 +3,7 @@
 - [impartus video downloader](#impartus-video-downloader)
   - [Demo](#demo)
   - [How to use](#how-to-use)
+    - [For NixOS Users](#for-nixos-users)
     - [Selecting lectures](#selecting-lectures)
   - [Configuration](#configuration)
   - [FAQ/Troubleshooting](#faqtroubleshooting)
@@ -25,6 +26,13 @@
 -   Add your username/email and password in `config.json`.
 -   Make suitable changes to the config as per your needs. Read [here](#configuration) for more information on configuration.
 -   Execute the binary.
+
+### For NixOS Users
+
+-   Run ```nix-shell``` in the root of the directory to install ffmpeg and steam-run.
+-   Execute the binary using  ```steam-run ./{executable_name}```.
+
+Thanks to [@NamitBhutani](https://github.com/NamitBhutani) for this.
 
 ### Selecting lectures
 

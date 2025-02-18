@@ -1,6 +1,7 @@
 archives:
   - format: zip
     files:
+      - shell.nix
       - config.json
       - README.md
       - LICENSE
