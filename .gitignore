@@ -16,6 +16,7 @@
 
 !README.md
 !LICENSE
+!shell.nix
 
 !.envrc
 !.tool-versions
