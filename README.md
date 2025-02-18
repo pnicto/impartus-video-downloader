@@ -26,6 +26,11 @@
 -   Make suitable changes to the config as per your needs. Read [here](#configuration) for more information on configuration.
 -   Execute the binary.
 
+### For NixOS Users
+
+-   Run ```nix-shell``` in the root of the directory to install ffmpeg and steam-run.
+-   Execute the binary using  ```steam-run ./{executable_name}```.
+
 ### Selecting lectures
 
 When prompted to enter a range do the following
