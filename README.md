@@ -7,6 +7,7 @@
     - [Selecting lectures](#selecting-lectures)
   - [Configuration](#configuration)
   - [FAQ/Troubleshooting](#faqtroubleshooting)
+    - [What is the project status?](#what-is-the-project-status)
     - [How do I run this?](#how-do-i-run-this)
     - [IT IS NOT WORKING!!!!](#it-is-not-working)
     - [I changed the credentials but it is not giving me data for the new credentials](#i-changed-the-credentials-but-it-is-not-giving-me-data-for-the-new-credentials)
@@ -62,6 +63,10 @@ The comments beside the fields tell the allowed values.
 ```
 
 ## FAQ/Troubleshooting
+
+### What is the project status?
+
+This project is(was) in a working state. It is not being actively maintained as I have graduated. If you find any issues, feel free to open an issue or a PR. I will try to help if I can.
 
 ### How do I run this?
 
